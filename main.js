@@ -27,6 +27,7 @@ function highlightClosestStation() {
   });
   if (closest) {
     closest.marker.openPopup(); // Just open the popup, don't re-bind
+    closest.marker.bindPopup(`Closest fire station: ${Math.round(minDist*0.000621371*10)/10} mi`);
     // Optionally, pan to it:
     // map.panTo([closest.lat, closest.lon]);
   }
@@ -65,7 +66,7 @@ map.on('locationerror', async function(e) {
       map.setView([coords.lat, coords.lng], 13);
       L.marker(coords).addTo(map).bindPopup("Your entered location").openPopup();
       highlightClosestStation();
-      findNearbyHydrants(coords.lat, coords.lng, 500); // <-- add this
+      findNearbyHydrants(coords.lat, coords.lng, 2000); // <-- add this
     } else {
       alert("Sorry, could not find that address.");
     }
