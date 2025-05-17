@@ -26,8 +26,7 @@ function highlightClosestStation() {
     }
   });
   if (closest) {
-    closest.marker.openPopup();
-    closest.marker.bindPopup(`<b>${closest.name}</b><br>This is the closest fire station to you!`).openPopup();
+    closest.marker.openPopup(); // Just open the popup, don't re-bind
     // Optionally, pan to it:
     // map.panTo([closest.lat, closest.lon]);
   }
@@ -40,8 +39,37 @@ map.on('locationfound', function(e) {
   highlightClosestStation();
 });
 
-map.on('locationerror', function(e) {
-  alert("Could not get your location. Showing default area.");
+// Helper: Geocode address to lat/lon using Nominatim
+async function geocodeAddress(address) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  try {
+    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    const data = await res.json();
+    if (data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch (e) {
+    alert("Failed to geocode address.");
+  }
+  return null;
+}
+
+// Listen for locationerror event
+map.on('locationerror', async function(e) {
+  let address = prompt("Could not get your location. Please enter your address or city:");
+  if (address) {
+    const coords = await geocodeAddress(address);
+    if (coords) {
+      userLatLng = coords;
+      map.setView([coords.lat, coords.lng], 13);
+      L.marker(coords).addTo(map).bindPopup("Your entered location").openPopup();
+      highlightClosestStation();
+    } else {
+      alert("Sorry, could not find that address.");
+    }
+  } else {
+    alert("Location is required to find the closest fire station.");
+  }
 });
 
 // Custom icons
