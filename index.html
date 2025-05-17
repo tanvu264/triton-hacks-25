@@ -86,25 +86,6 @@
     out body;
   `;
 
-  // Async function to get address from coordinates
-  async function getAddressFromCoords(lat, lon) {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
-    try {
-      const res = await fetch(url, {
-        headers: {
-          'Accept-Language': 'en'
-        }
-      });
-      const data = await res.json();
-      if (data.display_name) {
-        return data.display_name;
-      }
-    } catch (e) {
-      console.error("Reverse geocoding error:", e);
-    }
-    return "Unknown";
-  }
-
   // Step 5: Fetch fire station data from Overpass API
   fetch("https://overpass.kumi.systems/api/interpreter", {
     method: "POST",
@@ -112,20 +93,36 @@
   })
   .then(res => res.json())
   .then(data => {
-    data.elements.forEach(async station => {
+    data.elements.forEach(station => {
       const lat = station.lat;
       const lon = station.lon;
       const name = station.tags?.name || "Unnamed Station";
       const stationId = station.id.toString();
       const stationUrl = `station.html?id=${stationId}`;
 
-      // Get address using Nominatim (no API key needed)
-      const address = await getAddressFromCoords(lat, lon);
+      // Build address from available tags
+      const street = station.tags?.["addr:street"] || "";
+      const housenumber = station.tags?.["addr:housenumber"] || "";
+      const city = station.tags?.["addr:city"] || "";
+      const postcode = station.tags?.["addr:postcode"] || "";
+      let address = station.tags?.["addr:full"] || station.tags?.address || "";
+
+      if (!address && (street || housenumber || city || postcode)) {
+        address = `${housenumber} ${street}`.trim();
+        if (city) address += `, ${city}`;
+        if (postcode) address += `, ${postcode}`;
+        address = address.trim();
+      }
+      if (!address) address = "Unknown";
+
+      // Get phone (if available)
+      const phone = station.tags?.phone || station.tags?.["contact:phone"] || "Unknown";
 
       // Store station details in localStorage
       const stationDetails = {
         name,
         address,
+        phone,
         lat,
         lon
       };
@@ -135,8 +132,9 @@
       const operationalStatus = loadOperationalStatus();
       const isOperational = operationalStatus[stationId] !== false; // default true
 
-      // Simulate gas level (replace with real data if available)
-      const gasLevel = Math.floor(Math.random() * 101); // 0-100%
+      // Load saved gas level or use random fallback
+      let savedGas = localStorage.getItem(`stationGas_${stationId}`);
+      let gasLevel = savedGas !== null ? parseInt(savedGas, 10) : Math.floor(Math.random() * 101);
 
       // Determine gas bar color
       function getGasColor(level) {
@@ -160,7 +158,7 @@
       const marker = L.marker([lat, lon], { icon: isOperational ? redIcon : blackIcon }).addTo(map);
       marker.bindPopup(
         `<b>${name}</b><br>
-        <a href="${stationUrl}">View Details</a>
+        <a href="${stationUrl}" id="details-link-${stationId}">View Details</a>
         ${gasBarHtml}`
       );
 
@@ -168,6 +166,8 @@
         const slider = document.getElementById(`gas-slider-${stationId}`);
         const bar = document.getElementById(`gas-bar-${stationId}`);
         const label = document.getElementById(`gas-label-${stationId}`);
+        const detailsLink = document.getElementById(`details-link-${stationId}`);
+
         slider.addEventListener("input", function() {
           const val = parseInt(this.value, 10);
           bar.style.width = val + "%";
@@ -175,12 +175,16 @@
           bar.style.background = color;
           label.textContent = `Gas: ${val}%`;
           label.style.color = color;
-          // Optionally, save to localStorage or backend here
+          // Save to localStorage
+          localStorage.setItem(`stationGas_${stationId}`, val);
         });
-      });
 
-      marker.on("click", () => {
-        window.location.href = stationUrl;
+        // Save gas level before navigating to details page
+        detailsLink.addEventListener("click", function() {
+          const val = parseInt(slider.value, 10);
+          localStorage.setItem(`stationGas_${stationId}`, val);
+          // Let the link work as normal
+        });
       });
     });
   })
