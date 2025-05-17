@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Station</title>
+  <meta charset="utf-8" />
+  <style>
+    .bar-container {
+      width: 300px;
+      background: #eee;
+      border-radius: 8px;
+      margin: 30px 0;
+      height: 30px;
+      box-shadow: 0 1px 4px #ccc;
+      position: relative;
+    }
+    .bar {
+      height: 100%;
+      border-radius: 8px;
+      background: #f44336;
+      transition: width 0.5s;
+      text-align: right;
+      color: #fff;
+      font-weight: bold;
+      line-height: 30px;
+      padding-right: 10px;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .slider {
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Stations</h1>
+  <p>This is the station details page.</p>
+  <h2>Fire Truck Gas Level</h2>
+  <div class="bar-container">
+    <div id="gas-bar" class="bar">100%</div>
+  </div>
+  <input type="range" min="0" max="100" value="100" class="slider" id="gas-slider">
+  <h2>Operational Status</h2>
+  <label>
+    <input type="checkbox" id="operational-toggle">
+    Operational
+  </label>
+  <br><br>
+  <script>
+    // Use localStorage to persist gas levels for each station across visits
+    function getStationId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id') || 'default';
+    }
+
+    function loadGasLevels() {
+      const data = localStorage.getItem('stationGasLevels');
+      return data ? JSON.parse(data) : {};
+    }
+
+    function saveGasLevels(levels) {
+      localStorage.setItem('stationGasLevels', JSON.stringify(levels));
+    }
+
+    // --- Operational status logic ---
+    function loadOperationalStatus() {
+      const data = localStorage.getItem('stationOperational');
+      return data ? JSON.parse(data) : {};
+    }
+
+    function saveOperationalStatus(statuses) {
+      localStorage.setItem('stationOperational', JSON.stringify(statuses));
+    }
+
+    const bar = document.getElementById('gas-bar');
+    const slider = document.getElementById('gas-slider');
+    const operationalToggle = document.getElementById('operational-toggle');
+    const stationId = getStationId();
+
+    // Load or create gas level and operational status for this station
+    let stationGasLevels = loadGasLevels();
+    if (stationGasLevels[stationId] === undefined) {
+      // If not present, create a new entry with 100%
+      stationGasLevels[stationId] = 100;
+      saveGasLevels(stationGasLevels);
+    }
+
+    let operationalStatuses = loadOperationalStatus();
+    if (operationalStatuses[stationId] === undefined) {
+      operationalStatuses[stationId] = true; // default to operational
+      saveOperationalStatus(operationalStatuses);
+    }
+
+    // Display the gas level
+    let gasLevel = stationGasLevels[stationId];
+    bar.style.width = gasLevel + '%';
+    bar.textContent = gasLevel + '%';
+    slider.value = gasLevel;
+
+    operationalToggle.checked = operationalStatuses[stationId];
+
+    // Update the variable and bar when slider moves
+    slider.addEventListener('input', function() {
+      bar.style.width = this.value + '%';
+      bar.textContent = this.value + '%';
+      stationGasLevels[stationId] = Number(this.value);
+      saveGasLevels(stationGasLevels);
+    });
+
+    operationalToggle.addEventListener('change', function() {
+      operationalStatuses[stationId] = this.checked;
+      saveOperationalStatus(operationalStatuses);
+    });
+  </script>
+</body>
+</html>
