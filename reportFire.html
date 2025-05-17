@@ -78,10 +78,33 @@
     </form>
   </div>
   <script>
-    document.getElementById('fireForm').addEventListener('submit', function(e) {
+    // Geocode function using Nominatim API
+    async function geocodeAddress(address) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+      try {
+        const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+        const data = await res.json();
+        if (data && data.length > 0) {
+          return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+        }
+      } catch (e) {
+        // Optionally handle error
+      }
+      return null;
+    }
+
+    document.getElementById('fireForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const address = document.getElementById('address').value.trim();
       const strength = document.getElementById('strength').value;
+
+      // Geocode the address before saving
+      const coords = await geocodeAddress(address);
+
+      if (!coords) {
+        alert("Could not find the location for the entered address.");
+        return;
+      }
 
       // Get existing fires or start a new array
       let fires = [];
@@ -89,17 +112,19 @@
         fires = JSON.parse(localStorage.getItem('reportedFires')) || [];
       } catch (e) {}
 
-      // Add the new fire report
+      // Add the new fire report with coordinates
       fires.push({
         address,
         strength: Number(strength),
+        lat: coords.lat,
+        lon: coords.lon,
         reportedAt: new Date().toISOString()
       });
 
       // Save back to localStorage
       localStorage.setItem('reportedFires', JSON.stringify(fires));
 
-      alert(`Fire reported!\nAddress: ${address}\nStrength: ${strength}`);
+      alert(`Fire reported!\nAddress: ${address}\nStrength: ${strength}\nLocation: ${coords.lat}, ${coords.lon}`);
       this.reset();
     });
   </script>
