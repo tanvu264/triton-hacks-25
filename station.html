@@ -1,116 +1,159 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Station</title>
+  <title>Fire Station Details</title>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    .bar-container {
-      width: 300px;
-      background: #eee;
-      border-radius: 8px;
-      margin: 30px 0;
-      height: 30px;
-      box-shadow: 0 1px 4px #ccc;
-      position: relative;
+    body {
+      background: #f4f6fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
     }
-    .bar {
-      height: 100%;
-      border-radius: 8px;
-      background: #f44336;
-      transition: width 0.5s;
-      text-align: right;
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 32px 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5em;
+      color: #d32f2f;
+      letter-spacing: 1px;
+    }
+    .status {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-bottom: 1em;
+      font-size: 1rem;
+    }
+    .status.operational {
+      background: #e8f5e9;
+      color: #388e3c;
+      border: 1px solid #388e3c;
+    }
+    .status.closed {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #c62828;
+    }
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin: 1em 0 2em 0;
+    }
+    .info-list li {
+      margin-bottom: 0.7em;
+      font-size: 1.08em;
+      color: #333;
+    }
+    .back-btn {
+      display: inline-block;
+      padding: 10px 28px;
+      background: #1976d2;
       color: #fff;
-      font-weight: bold;
-      line-height: 30px;
-      padding-right: 10px;
-      position: absolute;
-      left: 0;
-      top: 0;
+      border: none;
+      border-radius: 24px;
+      font-size: 1rem;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s;
+      cursor: pointer;
     }
-    .slider {
-      width: 300px;
+    .back-btn:hover {
+      background: #1565c0;
     }
   </style>
 </head>
 <body>
-  <h1>Stations</h1>
-  <p>This is the station details page.</p>
-  <h2>Fire Truck Gas Level</h2>
-  <div class="bar-container">
-    <div id="gas-bar" class="bar">100%</div>
+  <div class="container">
+    <h1 id="station-name">Fire Station</h1>
+    <span id="station-status" class="status">Status</span>
+    <ul class="info-list">
+      <li><strong>Address:</strong> <span id="station-address">Loading...</span></li>
+      <li><strong>Phone:</strong> <span id="station-phone">Loading...</span></li>
+      <li><strong>Coordinates:</strong> <span id="station-coords">Loading...</span></li>
+      <li>
+        <strong>Gas Level:</strong>
+        <div style="margin-top:8px;">
+          <div id="gas-bar-bg" style="background:#e0e0e0;border-radius:12px;height:22px;width:100%;overflow:hidden;">
+            <div id="gas-bar" style="height:22px;width:0%;background:#1976d2;border-radius:12px 0 0 12px;transition:width 0.5s;"></div>
+          </div>
+          <div id="gas-label" style="margin-top:6px;font-weight:600;color:#1976d2;">0%</div>
+          <input type="range" min="0" max="100" value="0" id="gas-slider" style="width:100%;margin-top:10px;">
+        </div>
+      </li>
+    </ul>
+    <a href="index.html" class="back-btn">← Back to Map</a>
   </div>
-  <input type="range" min="0" max="100" value="100" class="slider" id="gas-slider">
-  <h2>Operational Status</h2>
-  <label>
-    <input type="checkbox" id="operational-toggle">
-    Operational
-  </label>
-  <br><br>
   <script>
-    // Use localStorage to persist gas levels for each station across visits
-    function getStationId() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('id') || 'default';
+    // Example: Replace this with your actual data fetching logic
+    // Get station ID from URL
+    const params = new URLSearchParams(window.location.search);
+    const stationId = params.get('id');
+
+    // Load station details from localStorage
+    let stationData = {
+      name: "Fire Station",
+      address: "Unknown",
+      phone: "Unknown",
+      lat: "",
+      lon: "",
+      operational: true,
+      gasLevel: 68 // fallback
+    };
+    const stored = localStorage.getItem(`stationDetails_${stationId}`);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      stationData = { ...stationData, ...parsed };
     }
 
-    function loadGasLevels() {
-      const data = localStorage.getItem('stationGasLevels');
-      return data ? JSON.parse(data) : {};
+    // Populate UI
+    document.getElementById('station-name').textContent = stationData.name;
+    document.getElementById('station-address').textContent = stationData.address;
+    document.getElementById('station-phone').textContent = stationData.phone;
+    document.getElementById('station-coords').textContent = `${stationData.lat}, ${stationData.lon}`;
+
+    const statusSpan = document.getElementById('station-status');
+    if (stationData.operational) {
+      statusSpan.textContent = "Operational";
+      statusSpan.classList.add("operational");
+    } else {
+      statusSpan.textContent = "Closed";
+      statusSpan.classList.add("closed");
     }
 
-    function saveGasLevels(levels) {
-      localStorage.setItem('stationGasLevels', JSON.stringify(levels));
+    // Gas bar logic
+    const gasBar = document.getElementById('gas-bar');
+    const gasLabel = document.getElementById('gas-label');
+    const gasSlider = document.getElementById('gas-slider');
+    let gasLevel = Math.max(0, Math.min(100, stationData.gasLevel));
+    gasBar.style.width = gasLevel + "%";
+    gasLabel.textContent = gasLevel + "%";
+    gasSlider.value = gasLevel;
+
+    function updateGasBar(val) {
+      gasBar.style.width = val + "%";
+      let color = "#388e3c";
+      if (val < 30) color = "#c62828";
+      else if (val < 70) color = "#fbc02d";
+      gasBar.style.background = color;
+      gasLabel.textContent = val + "%";
+      gasLabel.style.color = color;
     }
 
-    // --- Operational status logic ---
-    function loadOperationalStatus() {
-      const data = localStorage.getItem('stationOperational');
-      return data ? JSON.parse(data) : {};
-    }
-
-    function saveOperationalStatus(statuses) {
-      localStorage.setItem('stationOperational', JSON.stringify(statuses));
-    }
-
-    const bar = document.getElementById('gas-bar');
-    const slider = document.getElementById('gas-slider');
-    const operationalToggle = document.getElementById('operational-toggle');
-    const stationId = getStationId();
-
-    // Load or create gas level and operational status for this station
-    let stationGasLevels = loadGasLevels();
-    if (stationGasLevels[stationId] === undefined) {
-      // If not present, create a new entry with 100%
-      stationGasLevels[stationId] = 100;
-      saveGasLevels(stationGasLevels);
-    }
-
-    let operationalStatuses = loadOperationalStatus();
-    if (operationalStatuses[stationId] === undefined) {
-      operationalStatuses[stationId] = true; // default to operational
-      saveOperationalStatus(operationalStatuses);
-    }
-
-    // Display the gas level
-    let gasLevel = stationGasLevels[stationId];
-    bar.style.width = gasLevel + '%';
-    bar.textContent = gasLevel + '%';
-    slider.value = gasLevel;
-
-    operationalToggle.checked = operationalStatuses[stationId];
-
-    // Update the variable and bar when slider moves
-    slider.addEventListener('input', function() {
-      bar.style.width = this.value + '%';
-      bar.textContent = this.value + '%';
-      stationGasLevels[stationId] = Number(this.value);
-      saveGasLevels(stationGasLevels);
+    gasSlider.addEventListener("input", function() {
+      updateGasBar(this.value);
     });
 
-    operationalToggle.addEventListener('change', function() {
-      operationalStatuses[stationId] = this.checked;
-      saveOperationalStatus(operationalStatuses);
-    });
+    // Initialize bar color
+    updateGasBar(gasLevel);
   </script>
 </body>
 </html>

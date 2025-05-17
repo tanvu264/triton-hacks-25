@@ -22,7 +22,7 @@
 
 <script>
   // Step 1: Initialize map (temporary center, will update to user location)
-  const map = L.map('map').setView([40.7128, -74.0060], 12);
+  const map = L.map('map').setView([32.7157, -117.1611], 12); // San Diego
 
   // Step 2: Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -76,8 +76,8 @@
   }
 
   // Step 3: Define bounding box for your area
-  // Format: south,west,north,east (NYC example)
-  const bbox = "40.55,-74.25,40.95,-73.70";
+  // Format: south,west,north,east (San Diego area)
+  const bbox = "32.5,-117.3,33.0,-116.8";
 
   // Step 4: Overpass QL query to find fire stations only
   const overpassQuery = `
@@ -86,6 +86,25 @@
     out body;
   `;
 
+  // Async function to get address from coordinates
+  async function getAddressFromCoords(lat, lon) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'Accept-Language': 'en'
+        }
+      });
+      const data = await res.json();
+      if (data.display_name) {
+        return data.display_name;
+      }
+    } catch (e) {
+      console.error("Reverse geocoding error:", e);
+    }
+    return "Unknown";
+  }
+
   // Step 5: Fetch fire station data from Overpass API
   fetch("https://overpass.kumi.systems/api/interpreter", {
     method: "POST",
@@ -93,22 +112,75 @@
   })
   .then(res => res.json())
   .then(data => {
-    data.elements.forEach(station => {
+    data.elements.forEach(async station => {
       const lat = station.lat;
       const lon = station.lon;
       const name = station.tags?.name || "Unnamed Station";
       const stationId = station.id.toString();
       const stationUrl = `station.html?id=${stationId}`;
 
+      // Get address using Nominatim (no API key needed)
+      const address = await getAddressFromCoords(lat, lon);
+
+      // Store station details in localStorage
+      const stationDetails = {
+        name,
+        address,
+        lat,
+        lon
+      };
+      localStorage.setItem(`stationDetails_${stationId}`, JSON.stringify(stationDetails));
+
       // Get operational status for this station
       const operationalStatus = loadOperationalStatus();
       const isOperational = operationalStatus[stationId] !== false; // default true
 
+      // Simulate gas level (replace with real data if available)
+      const gasLevel = Math.floor(Math.random() * 101); // 0-100%
+
+      // Determine gas bar color
+      function getGasColor(level) {
+        if (level < 30) return "#c62828";
+        if (level < 70) return "#fbc02d";
+        return "#388e3c";
+      }
+
+      // Gas bar HTML with slider
+      const gasBarHtml = `
+        <div style="margin-top:8px;">
+          <div id="gas-bar-bg-${stationId}" style="background:#e0e0e0;border-radius:12px;height:16px;width:120px;overflow:hidden;">
+            <div id="gas-bar-${stationId}" style="height:16px;width:${gasLevel}%;background:${getGasColor(gasLevel)};border-radius:12px 0 0 12px;transition:width 0.5s;"></div>
+          </div>
+          <div id="gas-label-${stationId}" style="margin-top:4px;font-weight:600;color:${getGasColor(gasLevel)};font-size:0.95em;">Gas: ${gasLevel}%</div>
+          <input type="range" min="0" max="100" value="${gasLevel}" id="gas-slider-${stationId}" style="width:120px;margin-top:6px;">
+        </div>
+      `;
+
       // Use red if operational, black if not
       const marker = L.marker([lat, lon], { icon: isOperational ? redIcon : blackIcon }).addTo(map);
-      marker.bindPopup(`<b>${name}</b><br><a href="${stationUrl}" target="_blank">View Details</a>`);
+      marker.bindPopup(
+        `<b>${name}</b><br>
+        <a href="${stationUrl}">View Details</a>
+        ${gasBarHtml}`
+      );
+
+      marker.on("popupopen", () => {
+        const slider = document.getElementById(`gas-slider-${stationId}`);
+        const bar = document.getElementById(`gas-bar-${stationId}`);
+        const label = document.getElementById(`gas-label-${stationId}`);
+        slider.addEventListener("input", function() {
+          const val = parseInt(this.value, 10);
+          bar.style.width = val + "%";
+          const color = getGasColor(val);
+          bar.style.background = color;
+          label.textContent = `Gas: ${val}%`;
+          label.style.color = color;
+          // Optionally, save to localStorage or backend here
+        });
+      });
+
       marker.on("click", () => {
-        window.open(stationUrl, "_blank");
+        window.location.href = stationUrl;
       });
     });
   })
