@@ -10,18 +10,27 @@ let stationData = {
   lat: "",
   lon: "",
   operational: true,
-  gasLevel: 68 // fallback
+  trucks: [
+    { gas: 68, water: 68 },
+    { gas: 68, water: 68 },
+    { gas: 68, water: 68 }
+  ]
 };
 const stored = localStorage.getItem(`stationDetails_${stationId}`);
 if (stored) {
   const parsed = JSON.parse(stored);
+  // If trucks not present in storage, add default trucks
+  if (!parsed.trucks) parsed.trucks = [
+    { gas: 68, water: 68 },
+    { gas: 68, water: 68 },
+    { gas: 68, water: 68 }
+  ];
   stationData = { ...stationData, ...parsed };
 }
 
 // Populate UI
 document.getElementById('station-name').textContent = stationData.name;
 document.getElementById('station-address').textContent = stationData.address;
-document.getElementById('station-phone').textContent = stationData.phone;
 document.getElementById('station-coords').textContent = `${stationData.lat}, ${stationData.lon}`;
 
 // If address is unknown, try to fetch it using reverse geocoding
@@ -47,65 +56,82 @@ if (stationData.operational) {
   statusSpan.classList.add("closed");
 }
 
-// Gas bar logic
-const gasBar = document.getElementById('gas-bar');
-const gasLabel = document.getElementById('gas-label');
-const gasSlider = document.getElementById('gas-slider');
+// Render trucks
+const infoList = document.querySelector('.trucks-list');
 
-// Load saved gas level or fallback
-let savedGas = localStorage.getItem(`stationGas_${stationId}`);
-let gasLevel = savedGas !== null ? parseInt(savedGas, 10) : stationData.gasLevel;
-gasBar.style.width = gasLevel + "%";
-gasLabel.textContent = gasLevel + "%";
-gasSlider.value = gasLevel;
+// Remove old truck bars if any
+document.querySelectorAll('.truck-section').forEach(e => e.remove());
 
-function updateGasBar(val) {
-  gasBar.style.width = val + "%";
-  let color = "#388e3c";
-  if (val < 30) color = "#c62828";
-  else if (val < 70) color = "#fbc02d";
-  gasBar.style.background = color;
-  gasLabel.textContent = val + "%";
-  gasLabel.style.color = color;
-}
+stationData.trucks.forEach((truck, idx) => {
+  const li = document.createElement('li');
+  li.className = 'truck-section';
+  li.innerHTML = `
+    <strong>Truck ${idx + 1}:</strong>
+    <div style="margin-top:8px;">
+      <div>Gas Level:</div>
+      <div class="bar-slider-wrap">
+        <div id="gas-bar-bg-${idx}" class="gas-bar-bg">
+          <div id="gas-bar-${idx}" class="gas-bar"></div>
+        </div>
+        <input type="range" min="0" max="100" value="${truck.gas}" id="gas-slider-${idx}" class="gas-slider">
+        <div id="gas-label-${idx}" class="gas-label">${truck.gas}%</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <div>Water Level:</div>
+      <div class="bar-slider-wrap">
+        <div id="water-bar-bg-${idx}" class="gas-bar-bg">
+          <div id="water-bar-${idx}" class="gas-bar"></div>
+        </div>
+        <input type="range" min="0" max="100" value="${truck.water}" id="water-slider-${idx}" class="gas-slider">
+        <div id="water-label-${idx}" class="gas-label">${truck.water}%</div>
+      </div>
+    </div>
+  `;
+  infoList.appendChild(li);
 
-gasSlider.addEventListener("input", function() {
-  updateGasBar(this.value);
-  localStorage.setItem(`stationGas_${stationId}`, this.value);
+  // Gas logic
+  const gasBar = document.getElementById(`gas-bar-${idx}`);
+  const gasLabel = document.getElementById(`gas-label-${idx}`);
+  const gasSlider = document.getElementById(`gas-slider-${idx}`);
+
+  function updateGasBar(val) {
+    gasBar.style.width = val + "%";
+    let color = "#388e3c";
+    if (val < 30) color = "#c62828";
+    else if (val < 70) color = "#fbc02d";
+    gasBar.style.background = color;
+    gasLabel.textContent = val + "%";
+    gasLabel.style.color = color;
+  }
+  gasSlider.addEventListener("input", function() {
+    updateGasBar(this.value);
+    stationData.trucks[idx].gas = parseInt(this.value, 10);
+    localStorage.setItem(`stationDetails_${stationId}`, JSON.stringify(stationData));
+  });
+  updateGasBar(truck.gas);
+
+  // Water logic
+  const waterBar = document.getElementById(`water-bar-${idx}`);
+  const waterLabel = document.getElementById(`water-label-${idx}`);
+  const waterSlider = document.getElementById(`water-slider-${idx}`);
+
+  function updateWaterBar(val) {
+    waterBar.style.width = val + "%";
+    let color = "#388e3c";
+    if (val < 30) color = "#c62828";
+    else if (val < 70) color = "#fbc02d";
+    waterBar.style.background = color;
+    waterLabel.textContent = val + "%";
+    waterLabel.style.color = color;
+  }
+  waterSlider.addEventListener("input", function() {
+    updateWaterBar(this.value);
+    stationData.trucks[idx].water = parseInt(this.value, 10);
+    localStorage.setItem(`stationDetails_${stationId}`, JSON.stringify(stationData));
+  });
+  updateWaterBar(truck.water);
 });
-
-// Initialize bar color
-updateGasBar(gasLevel);
-
-// Water bar logic
-const waterBar = document.getElementById('water-bar');
-const waterLabel = document.getElementById('water-label');
-const waterSlider = document.getElementById('water-slider');
-
-// Load saved water level or fallback
-let savedWater = localStorage.getItem(`stationWater_${stationId}`);
-let waterLevel = savedWater !== null ? parseInt(savedWater, 10) : 68;
-waterBar.style.width = waterLevel + "%";
-waterLabel.textContent = waterLevel + "%";
-waterSlider.value = waterLevel;
-
-function updateWaterBar(val) {
-  waterBar.style.width = val + "%";
-  let color = "#388e3c";
-  if (val < 30) color = "#c62828";
-  else if (val < 70) color = "#fbc02d";
-  waterBar.style.background = color;
-  waterLabel.textContent = val + "%";
-  waterLabel.style.color = color;
-}
-
-waterSlider.addEventListener("input", function() {
-  updateWaterBar(this.value);
-  localStorage.setItem(`stationWater_${stationId}`, this.value);
-});
-
-// Initialize water bar color
-updateWaterBar(waterLevel);
 
 async function getAddressFromCoords(lat, lon) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
@@ -122,27 +148,3 @@ async function getAddressFromCoords(lat, lon) {
   }
   return "Unknown";
 }
-
-// HTML Structure
-/*
-<li>
-  <strong>Gas Level:</strong>
-  <div style="margin-top:8px;">
-    <div id="gas-bar-bg" class="gas-bar-bg">
-      <div id="gas-bar" class="gas-bar"></div>
-    </div>
-    <div id="gas-label" class="gas-label">0%</div>
-    <input type="range" min="0" max="100" value="0" id="gas-slider" class="gas-slider">
-  </div>
-</li>
-<li>
-  <strong>Water Level:</strong>
-  <div style="margin-top:8px;">
-    <div id="water-bar-bg" class="gas-bar-bg">
-      <div id="water-bar" class="gas-bar"></div>
-    </div>
-    <div id="water-label" class="gas-label">0%</div>
-    <input type="range" min="0" max="100" value="0" id="water-slider" class="gas-slider">
-  </div>
-</li>
-*/

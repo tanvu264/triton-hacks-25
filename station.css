@@ -1,23 +1,71 @@
-body {
-  background: #f4f6fa;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #181a20;
   font-family: 'Segoe UI', Arial, sans-serif;
+  color: #f1f1f1;
+}
+
+body {
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+.container {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 40px 0;
+  background: #181a20;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.station-flex {
+  display: flex;
+  flex-direction: row;
+  width: 90vw;
+  max-width: 1200px;
+  gap: 40px;
+}
+
+.station-info {
+  flex: 1 1 320px;
+  min-width: 260px;
+  max-width: 380px;
+  border-right: 2px solid #292c36;
+  background: #232634;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  text-align: center;  /* Center text */
+}
+
+.station-trucks {
+  flex: 2 1 0;
+  min-width: 320px;
+  padding-left: 24px;
+}
+
+.trucks-list {
   margin: 0;
   padding: 0;
 }
-.container {
-  max-width: 500px;
-  margin: 40px auto;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  padding: 32px 24px;
-}
+
 h1 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   margin-bottom: 0.5em;
-  color: #d32f2f;
+  color: #e2a520;
   letter-spacing: 1px;
 }
+
 .status {
   display: inline-block;
   padding: 6px 18px;
@@ -26,62 +74,182 @@ h1 {
   margin-bottom: 1em;
   font-size: 1rem;
 }
+
 .status.operational {
-  background: #e8f5e9;
-  color: #388e3c;
-  border: 1px solid #388e3c;
+  background: #263238;
+  color: #4caf50;
+  border: 1px solid #4caf50;
 }
 .status.closed {
-  background: #ffebee;
-  color: #c62828;
-  border: 1px solid #c62828;
+  background: #2d1a1a;
+  color: #ff5252;
+  border: 1px solid #ff5252;
 }
+
 .info-list {
   list-style: none;
   padding: 0;
   margin: 1em 0 2em 0;
+  width: 100%;
 }
+
 .info-list li {
-  margin-bottom: 0.7em;
-  font-size: 1.08em;
-  color: #333;
+  margin-bottom: 1.5em;
+  font-size: 1.12em;
+  color: #e0e0e0;
+  width: 100%;
 }
+
+.truck-section {
+  background: #232634;
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+  width: 100%;
+  border: 1.5px solid #31344b;
+}
+
+.truck-section hr {
+  margin: 18px 0 0 0;
+  border: 0;
+  border-top: 2px solid #eee;
+}
+
+.gas-bar-bg {
+  background: #31344b;
+  border-radius: 12px;
+  height: 28px;
+  min-width: 120px;
+  margin-bottom: 0; /* Remove bottom margin for flush look */
+  width: 100%;
+  max-width: 600px;
+  overflow: hidden;
+}
+
+.gas-bar {
+  height: 28px;
+  width: 0%;
+  background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+  border-radius: 12px 0 0 12px;
+  transition: width 0.5s;
+}
+
+.gas-label {
+  margin-top: 6px;
+  font-weight: 600;
+  color: #00c6ff;
+  font-size: 1.1em;
+  text-shadow: 0 1px 2px #000a;
+}
+
+.gas-slider {
+  width: 100%;
+  max-width: 600px;
+  display: block;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 28px;
+  accent-color: #e2a520;
+  background: #232634;
+  border-radius: 8px;
+}
+
 .back-btn {
   display: inline-block;
-  padding: 10px 28px;
-  background: #1976d2;
+  padding: 12px 32px;
+  background: #0072ff;
   color: #fff;
   border: none;
   border-radius: 24px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   text-decoration: none;
   font-weight: 600;
   transition: background 0.2s;
   cursor: pointer;
+  margin-top: 32px;
+  box-shadow: 0 2px 8px #000a;
 }
 .back-btn:hover {
-  background: #1565c0;
+  background: #0051a8;
 }
-.gas-bar-bg {
-  background: #e0e0e0;
-  border-radius: 12px;
-  height: 22px;
+
+/* Gas bar: always brown */
+.gas-bar[id^="gas-bar"] {
+  background: #a0522d !important; /* SaddleBrown */
+}
+
+/* Water bar: always blue */
+.gas-bar[id^="water-bar"] {
+  background: #2196f3 !important; /* Blue */
+}
+
+/* Gas percentage label: always brown */
+.gas-label[id^="gas-label"] {
+  color: #a0522d !important;
+}
+
+/* Water percentage label: always blue */
+.gas-label[id^="water-label"] {
+  color: #2196f3 !important;
+}
+
+.bar-slider-wrap {
+  position: relative;
   width: 100%;
-  overflow: hidden;
+  max-width: 600px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
 }
-.gas-bar {
-  height: 22px;
-  width: 0%;
-  background: #1976d2;
-  border-radius: 12px 0 0 12px;
-  transition: width 0.5s;
-}
-.gas-label {
-  margin-top: 6px;
-  font-weight: 600;
-  color: #1976d2;
-}
-.gas-slider {
+
+.bar-slider-wrap .gas-bar-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
-  margin-top: 10px;
+  height: 28px;
+  z-index: 1;
+}
+
+.bar-slider-wrap .gas-slider {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 28px;
+  opacity: 0;         /* Hide the slider but keep it interactive */
+  z-index: 2;
+  cursor: pointer;
+}
+
+.bar-slider-wrap .gas-label {
+  position: relative;
+  z-index: 3;
+  margin-left: 12px;
+  white-space: nowrap;
+  min-width: 48px;
+  text-align: right;
+  right: -100%;
+}
+
+@media (max-width: 900px) {
+  .station-flex {
+    flex-direction: column;
+    gap: 0;
+  }
+  .station-info {
+    border-right: none;
+    border-bottom: 2px solid #292c36;
+    padding-right: 0;
+    padding-bottom: 24px;
+    max-width: 100%;
+  }
+  .station-trucks {
+    padding-left: 0;
+    min-width: 0;
+  }
 }
