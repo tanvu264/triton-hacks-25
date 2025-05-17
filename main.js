@@ -9,8 +9,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // Center map on user's location
 map.locate({ setView: true, maxZoom: 14 });
 
+let userLatLng = null;
+
+// Listen for locationfound event to get user coordinates
 map.on('locationfound', function(e) {
-  L.marker(e.latlng).addTo(map).bindPopup("You are here").openPopup();
+  userLatLng = e.latlng;
+  // Optionally, add a marker for the user
+  L.marker(userLatLng).addTo(map).bindPopup("You are here").openPopup();
 });
 
 map.on('locationerror', function(e) {
@@ -68,6 +73,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
 })
 .then(res => res.json())
 .then(data => {
+  const stationMarkers = [];
   data.elements.forEach(station => {
     const lat = station.lat;
     const lon = station.lon;
@@ -140,6 +146,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
     }
 
     const marker = L.marker([lat, lon], { icon: iconToUse }).addTo(map);
+    stationMarkers.push({ marker, lat, lon, stationId, name });
     marker.bindPopup(
       `<b>${name}</b><br>
       <a href="${stationUrl}" id="details-link-${stationId}">View Details</a>
@@ -193,6 +200,28 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
         localStorage.setItem(`stationGas_${stationId}`, val);
       });
     });
+  });
+
+  // Wait for user location, then find closest station
+  map.on('locationfound', function(e) {
+    userLatLng = e.latlng;
+    let minDist = Infinity;
+    let closest = null;
+    stationMarkers.forEach(st => {
+      const dist = map.distance(userLatLng, L.latLng(st.lat, st.lon));
+      if (dist < minDist) {
+        minDist = dist;
+        closest = st;
+      }
+    });
+    if (closest) {
+      // Highlight the closest marker (e.g., bounce or open popup)
+      closest.marker.openPopup();
+      // Optionally, pan to it:
+      // map.panTo([closest.lat, closest.lon]);
+      // Optionally, show a message:
+      closest.marker.bindPopup(`<b>${closest.name}</b><br>This is the closest fire station to you!`).openPopup();
+    }
   });
 })
 .catch(err => {
