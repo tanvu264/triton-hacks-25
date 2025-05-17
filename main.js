@@ -146,6 +146,10 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
       ${gasBarHtml}`
     );
 
+    marker.on("click", function() {
+      window.location.href = stationUrl;
+    });
+
     marker.on("popupopen", () => {
       // Always get the latest value from localStorage
       const latestGas = localStorage.getItem(`stationGas_${stationId}`);
