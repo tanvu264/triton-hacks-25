@@ -33,6 +33,32 @@ function highlightClosestStation() {
   }
 }
 
+function findClosestStations() {
+  const reports = JSON.parse(localStorage.getItem('reportedFires'))
+  const closestStations = []
+  
+  reports.forEach((report) => {
+    const lat = report['lat']
+    const lon = report['lon']
+    const marker = L.marker([lat, lon]).addTo(map);
+    const temp = []
+    /**
+    stationMarkers.forEach(st => {
+      const dist = map.distance(userLatLng, L.latLng(st.lat, st.lon));
+      if (dist < radius) {
+        temp.push(dist)
+      }
+    });
+    closestStations.push(temp)
+    */
+  });
+
+  return closestStations;
+}
+
+findClosestStations();
+
+
 // Listen for locationfound event to get user coordinates
 map.on('locationfound', function(e) {
   userLatLng = e.latlng;
