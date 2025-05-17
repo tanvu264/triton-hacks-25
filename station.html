@@ -4,72 +4,7 @@
   <title>Fire Station Details</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background: #f4f6fa;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 500px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      padding: 32px 24px;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 0.5em;
-      color: #d32f2f;
-      letter-spacing: 1px;
-    }
-    .status {
-      display: inline-block;
-      padding: 6px 18px;
-      border-radius: 20px;
-      font-weight: 600;
-      margin-bottom: 1em;
-      font-size: 1rem;
-    }
-    .status.operational {
-      background: #e8f5e9;
-      color: #388e3c;
-      border: 1px solid #388e3c;
-    }
-    .status.closed {
-      background: #ffebee;
-      color: #c62828;
-      border: 1px solid #c62828;
-    }
-    .info-list {
-      list-style: none;
-      padding: 0;
-      margin: 1em 0 2em 0;
-    }
-    .info-list li {
-      margin-bottom: 0.7em;
-      font-size: 1.08em;
-      color: #333;
-    }
-    .back-btn {
-      display: inline-block;
-      padding: 10px 28px;
-      background: #1976d2;
-      color: #fff;
-      border: none;
-      border-radius: 24px;
-      font-size: 1rem;
-      text-decoration: none;
-      font-weight: 600;
-      transition: background 0.2s;
-      cursor: pointer;
-    }
-    .back-btn:hover {
-      background: #1565c0;
-    }
-  </style>
+  <link rel="stylesheet" href="station.css" />
 </head>
 <body>
   <div class="container">
@@ -82,78 +17,16 @@
       <li>
         <strong>Gas Level:</strong>
         <div style="margin-top:8px;">
-          <div id="gas-bar-bg" style="background:#e0e0e0;border-radius:12px;height:22px;width:100%;overflow:hidden;">
-            <div id="gas-bar" style="height:22px;width:0%;background:#1976d2;border-radius:12px 0 0 12px;transition:width 0.5s;"></div>
+          <div id="gas-bar-bg" class="gas-bar-bg">
+            <div id="gas-bar" class="gas-bar"></div>
           </div>
-          <div id="gas-label" style="margin-top:6px;font-weight:600;color:#1976d2;">0%</div>
-          <input type="range" min="0" max="100" value="0" id="gas-slider" style="width:100%;margin-top:10px;">
+          <div id="gas-label" class="gas-label">0%</div>
+          <input type="range" min="0" max="100" value="0" id="gas-slider" class="gas-slider">
         </div>
       </li>
     </ul>
     <a href="index.html" class="back-btn">← Back to Map</a>
   </div>
-  <script>
-    // Example: Replace this with your actual data fetching logic
-    // Get station ID from URL
-    const params = new URLSearchParams(window.location.search);
-    const stationId = params.get('id');
-
-    // Load station details from localStorage
-    let stationData = {
-      name: "Fire Station",
-      address: "Unknown",
-      phone: "Unknown",
-      lat: "",
-      lon: "",
-      operational: true,
-      gasLevel: 68 // fallback
-    };
-    const stored = localStorage.getItem(`stationDetails_${stationId}`);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      stationData = { ...stationData, ...parsed };
-    }
-
-    // Populate UI
-    document.getElementById('station-name').textContent = stationData.name;
-    document.getElementById('station-address').textContent = stationData.address;
-    document.getElementById('station-phone').textContent = stationData.phone;
-    document.getElementById('station-coords').textContent = `${stationData.lat}, ${stationData.lon}`;
-
-    const statusSpan = document.getElementById('station-status');
-    if (stationData.operational) {
-      statusSpan.textContent = "Operational";
-      statusSpan.classList.add("operational");
-    } else {
-      statusSpan.textContent = "Closed";
-      statusSpan.classList.add("closed");
-    }
-
-    // Gas bar logic
-    const gasBar = document.getElementById('gas-bar');
-    const gasLabel = document.getElementById('gas-label');
-    const gasSlider = document.getElementById('gas-slider');
-    let gasLevel = Math.max(0, Math.min(100, stationData.gasLevel));
-    gasBar.style.width = gasLevel + "%";
-    gasLabel.textContent = gasLevel + "%";
-    gasSlider.value = gasLevel;
-
-    function updateGasBar(val) {
-      gasBar.style.width = val + "%";
-      let color = "#388e3c";
-      if (val < 30) color = "#c62828";
-      else if (val < 70) color = "#fbc02d";
-      gasBar.style.background = color;
-      gasLabel.textContent = val + "%";
-      gasLabel.style.color = color;
-    }
-
-    gasSlider.addEventListener("input", function() {
-      updateGasBar(this.value);
-    });
-
-    // Initialize bar color
-    updateGasBar(gasLevel);
-  </script>
+  <script src="station.js"></script>
 </body>
 </html>
