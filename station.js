@@ -24,6 +24,16 @@ document.getElementById('station-address').textContent = stationData.address;
 document.getElementById('station-phone').textContent = stationData.phone;
 document.getElementById('station-coords').textContent = `${stationData.lat}, ${stationData.lon}`;
 
+// If address is unknown, try to fetch it using reverse geocoding
+if (stationData.address === "Unknown" && stationData.lat && stationData.lon) {
+  getAddressFromCoords(stationData.lat, stationData.lon).then(address => {
+    document.getElementById('station-address').textContent = address;
+    // Optionally, update localStorage for next time
+    stationData.address = address;
+    localStorage.setItem(`stationDetails_${stationId}`, JSON.stringify(stationData));
+  });
+}
+
 const statusSpan = document.getElementById('station-status');
 if (stationData.operational) {
   statusSpan.textContent = "Operational";
@@ -62,3 +72,19 @@ gasSlider.addEventListener("input", function() {
 
 // Initialize bar color
 updateGasBar(gasLevel);
+
+async function getAddressFromCoords(lat, lon) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+  try {
+    const res = await fetch(url, {
+      headers: { 'Accept-Language': 'en' }
+    });
+    const data = await res.json();
+    if (data.display_name) {
+      return data.display_name;
+    }
+  } catch (e) {
+    console.error("Reverse geocoding error:", e);
+  }
+  return "Unknown";
+}
