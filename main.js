@@ -10,12 +10,34 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 map.locate({ setView: true, maxZoom: 14 });
 
 let userLatLng = null;
+let stationMarkers = [];
+let stationsLoaded = false;
+
+// Helper to find and highlight the closest station
+function highlightClosestStation() {
+  if (!userLatLng || stationMarkers.length === 0) return;
+  let minDist = Infinity;
+  let closest = null;
+  stationMarkers.forEach(st => {
+    const dist = map.distance(userLatLng, L.latLng(st.lat, st.lon));
+    if (dist < minDist) {
+      minDist = dist;
+      closest = st;
+    }
+  });
+  if (closest) {
+    closest.marker.openPopup();
+    closest.marker.bindPopup(`<b>${closest.name}</b><br>This is the closest fire station to you!`).openPopup();
+    // Optionally, pan to it:
+    // map.panTo([closest.lat, closest.lon]);
+  }
+}
 
 // Listen for locationfound event to get user coordinates
 map.on('locationfound', function(e) {
   userLatLng = e.latlng;
-  // Optionally, add a marker for the user
   L.marker(userLatLng).addTo(map).bindPopup("You are here").openPopup();
+  highlightClosestStation();
 });
 
 map.on('locationerror', function(e) {
@@ -73,7 +95,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
 })
 .then(res => res.json())
 .then(data => {
-  const stationMarkers = [];
+  stationMarkers = [];
   data.elements.forEach(station => {
     const lat = station.lat;
     const lon = station.lon;
@@ -201,28 +223,8 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
       });
     });
   });
-
-  // Wait for user location, then find closest station
-  map.on('locationfound', function(e) {
-    userLatLng = e.latlng;
-    let minDist = Infinity;
-    let closest = null;
-    stationMarkers.forEach(st => {
-      const dist = map.distance(userLatLng, L.latLng(st.lat, st.lon));
-      if (dist < minDist) {
-        minDist = dist;
-        closest = st;
-      }
-    });
-    if (closest) {
-      // Highlight the closest marker (e.g., bounce or open popup)
-      closest.marker.openPopup();
-      // Optionally, pan to it:
-      // map.panTo([closest.lat, closest.lon]);
-      // Optionally, show a message:
-      closest.marker.bindPopup(`<b>${closest.name}</b><br>This is the closest fire station to you!`).openPopup();
-    }
-  });
+  stationsLoaded = true;
+  highlightClosestStation();
 })
 .catch(err => {
   console.error("Failed to fetch fire stations:", err);
