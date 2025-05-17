@@ -37,6 +37,7 @@ map.on('locationfound', function(e) {
   userLatLng = e.latlng;
   L.marker(userLatLng).addTo(map).bindPopup("You are here").openPopup();
   highlightClosestStation();
+  findNearbyHydrants(userLatLng.lat, userLatLng.lng, 500); // <-- add this
 });
 
 // Helper: Geocode address to lat/lon using Nominatim
@@ -64,6 +65,7 @@ map.on('locationerror', async function(e) {
       map.setView([coords.lat, coords.lng], 13);
       L.marker(coords).addTo(map).bindPopup("Your entered location").openPopup();
       highlightClosestStation();
+      findNearbyHydrants(coords.lat, coords.lng, 500); // <-- add this
     } else {
       alert("Sorry, could not find that address.");
     }
@@ -257,3 +259,43 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
 .catch(err => {
   console.error("Failed to fetch fire stations:", err);
 });
+
+// Call this function after you set userLatLng (from geolocation or manual input)
+async function findNearbyHydrants(lat, lon, radiusMeters = 500) {
+  // Overpass QL: find fire hydrants within radius
+  const query = `
+    [out:json][timeout:25];
+    node
+      ["emergency"="fire_hydrant"]
+      (around:${radiusMeters},${lat},${lon});
+    out body;
+  `;
+  try {
+    const res = await fetch("https://overpass.kumi.systems/api/interpreter", {
+      method: "POST",
+      body: query
+    });
+    const data = await res.json();
+    if (data.elements && data.elements.length > 0) {
+      // Use a pink marker icon for hydrants
+      const pinkIcon = L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-pink.png",
+        shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+      data.elements.forEach(hydrant => {
+        L.marker([hydrant.lat, hydrant.lon], {
+          icon: pinkIcon
+        }).addTo(map).bindPopup("Fire Hydrant");
+      });
+      alert(`Found ${data.elements.length} fire hydrant(s) nearby!`);
+    } else {
+      alert("No fire hydrants found nearby.");
+    }
+  } catch (e) {
+    alert("Failed to search for fire hydrants.");
+  }
+}
