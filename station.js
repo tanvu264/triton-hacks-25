@@ -3,6 +3,10 @@ const params = new URLSearchParams(window.location.search);
 const stationId = params.get('id');
 
 // Load station details from localStorage
+function getRandomLevel() {
+  return Math.floor(Math.random() * 101); // 0 to 100 inclusive
+}
+
 let stationData = {
   name: "Fire Station",
   address: "Unknown",
@@ -11,9 +15,9 @@ let stationData = {
   lon: "",
   operational: true,
   trucks: [
-    { gas: 68, water: 68 },
-    { gas: 68, water: 68 },
-    { gas: 68, water: 68 }
+    { gas: getRandomLevel(), water: getRandomLevel() },
+    { gas: getRandomLevel(), water: getRandomLevel() },
+    { gas: getRandomLevel(), water: getRandomLevel() }
   ]
 };
 const stored = localStorage.getItem(`stationDetails_${stationId}`);
@@ -21,9 +25,9 @@ if (stored) {
   const parsed = JSON.parse(stored);
   // If trucks not present in storage, add default trucks
   if (!parsed.trucks) parsed.trucks = [
-    { gas: 68, water: 68 },
-    { gas: 68, water: 68 },
-    { gas: 68, water: 68 }
+    { gas: getRandomLevel(), water: getRandomLevel() },
+    { gas: getRandomLevel(), water: getRandomLevel() },
+    { gas: getRandomLevel(), water: getRandomLevel() }
   ];
   stationData = { ...stationData, ...parsed };
 }
