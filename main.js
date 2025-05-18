@@ -48,7 +48,7 @@ function PlotFires() {
   reports.forEach((report) => {
     const lat = report['lat'];
     const lon = report['lon'];
-    L.marker([lat, lon]).addTo(map);
+    L.marker([lat, lon], { icon: fireIcon }).addTo(map);
     //console.log(findClosestStation(lat, lon).name);
   });
 }
@@ -104,6 +104,23 @@ const redIcon = new L.Icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const fireIcon = L.divIcon({
+  className: 'fire-div-icon',
+  html: '🔥',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32]
+});
+
+const fireStationIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854878.png', // Example fire station icon
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
   shadowSize: [41, 41]
 });
 
@@ -211,14 +228,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
     `;
 
     // Choose marker icon based on gas level
-    let iconToUse;
-    if (gasLevel < 30) {
-      iconToUse = redIcon; // red for low gas
-    } else if (gasLevel < 70) {
-      iconToUse = yellowIcon; // yellow for medium gas
-    } else {
-      iconToUse = greenIcon; // green for high gas
-    }
+    let iconToUse = fireStationIcon;
 
     const marker = L.marker([lat, lon], { icon: iconToUse }).addTo(map);
     stationMarkers.push({ marker, lat, lon, stationId, name });
