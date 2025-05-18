@@ -34,12 +34,18 @@ function highlightClosestStation() {
 }
 
 function findFiveClosestStations(lat, lon) {
-  const closestStations = [];
-  stationMarkers.forEach(st => {
+  const stationsWithDist = stationMarkers.map(st => {
     const dist = map.distance([lat, lon], L.latLng(st.lat, st.lon));
-    closestStations.push(dist);
+    return { ...st, dist };
   });
-  return closestStations.sort((a, b) => a - b).slice(0, 5); //ascending order
+  
+  console.log(stationsWithDist);
+
+  stationsWithDist.sort((a, b)=> {
+    a.dist - b.dist;
+  })
+
+  return stationsWithDist.slice(0, 5); 
 }
 
 function PlotFires() {
@@ -48,7 +54,7 @@ function PlotFires() {
   reports.forEach((report) => {
     const lat = report['lat'];
     const lon = report['lon'];
-    L.marker([lat, lon], { icon: fireIcon }).addTo(map);
+    L.marker([lat, lon]).addTo(map);
     console.log(findFiveClosestStations(lat, lon));
   });
 }
@@ -60,6 +66,8 @@ map.on('locationfound', function(e) {
   L.marker(userLatLng).addTo(map).bindPopup("You are here").openPopup();
   highlightClosestStation();
   findNearbyHydrants(userLatLng.lat, userLatLng.lng, 500); // <-- add this
+  PlotFires()
+  //findFiveClosestStations()
 });
 
 // Helper: Geocode address to lat/lon using Nominatim
@@ -103,23 +111,6 @@ const redIcon = new L.Icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const fireIcon = L.divIcon({
-  className: 'fire-div-icon',
-  html: '🔥',
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32]
-});
-
-const fireStationIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/11210/11210082.png', // Example fire station icon
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32],
-  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
   shadowSize: [41, 41]
 });
 
@@ -232,7 +223,14 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
     `;
 
     // Choose marker icon based on gas level
-    let iconToUse = fireStationIcon;
+    let iconToUse;
+    if (gasLevel < 30) {
+      iconToUse = redIcon; // red for low gas
+    } else if (gasLevel < 70) {
+      iconToUse = yellowIcon; // yellow for medium gas
+    } else {
+      iconToUse = greenIcon; // green for high gas
+    }
 
     const marker = L.marker([lat, lon], { icon: iconToUse }).addTo(map);
     stationMarkers.push({ marker, lat, lon, stationId, name });
@@ -272,6 +270,15 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
         label.style.color = color;
         // Save to localStorage
         localStorage.setItem(`stationGas_${stationId}`, val);
+
+        // Update marker icon color live
+        if (val < 30) {
+          marker.setIcon(redIcon);
+        } else if (val < 70) {
+          marker.setIcon(yellowIcon);
+        } else {
+          marker.setIcon(greenIcon);
+        }
       });
 
       // Save gas level before navigating to details page
@@ -283,12 +290,12 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
   });
   stationsLoaded = true;
   highlightClosestStation();
-  PlotFires()
 })
 .catch(err => {
   console.error("Failed to fetch fire stations:", err);
 });
 
+<<<<<<< HEAD
 // Fetch fire reports from SheetDB
 fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZtDj-kAAbjKXdFMAgeopNdcqefphX5o3W2V4/exec')
   .then(res => res.json())
@@ -308,6 +315,8 @@ fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZt
     console.error("Failed to fetch fire reports from SheetDB:", err);
   });
 
+=======
+>>>>>>> c599d3b47dd1ebac8ffe7a871094eb5a4f723074
 // Call this function after you set userLatLng (from geolocation or manual input)
 async function findNearbyHydrants(lat, lon, radiusMeters = 500) {
   // Overpass QL: find fire hydrants within radius
