@@ -8,17 +8,24 @@ async function reverseGeocode(lat, lon) {
   } catch (e) {
     return `${lat}, ${lon}`;
   }
-}// Load fire reports from localStorage
-const fireReports = JSON.parse(localStorage.getItem('reportedFires')) || [];
-const ul = document.getElementById('incident-list');fireReports.forEach(async report => {
-  const li = document.createElement('li');
-  li.innerHTML = `
-    <strong>Fire Address:</strong> <span class="fire-address">Loading...</span><br>
-    <strong>Strength:</strong> ${report.strength}<br>
-    <strong>Coordinates:</strong> (${report.lat}, ${report.lon})<br>
-    <strong>Reported At:</strong> ${report.reportedAt ? new Date(report.reportedAt).toLocaleString() : "Unknown"}
-  `;
-  ul.appendChild(li);  // Fetch and update address
-  const address = await reverseGeocode(report.lat, report.lon);
-  li.querySelector('.fire-address').textContent = address;
-});
+}
+
+// Fetch fire reports from SheetDB
+fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
+  .then(res => res.json())
+  .then(fireReports => {
+    const ul = document.getElementById('incident-list');
+    fireReports.forEach(async report => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <strong>Fire Address:</strong> <span class="fire-address">Loading...</span><br>
+        <strong>Strength:</strong> ${report.strength}<br>
+        <strong>Coordinates:</strong> (${report.lat}, ${report.lon})<br>
+        <strong>Reported At:</strong> ${report.reportedAt ? new Date(report.reportedAt).toLocaleString() : "Unknown"}
+      `;
+      ul.appendChild(li);
+      // Fetch and update address
+      const address = await reverseGeocode(report.lat, report.lon);
+      li.querySelector('.fire-address').textContent = address;
+    });
+  });
