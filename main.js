@@ -116,7 +116,7 @@ const fireIcon = L.divIcon({
 });
 
 const fireStationIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854878.png', // Example fire station icon
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/11210/11210082.png', // Example fire station icon
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
