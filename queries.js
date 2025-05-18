@@ -119,7 +119,7 @@ function getOrCreateDropdownPanel() {
     panel.style.position = 'fixed';
     panel.style.top = '0';
     panel.style.right = '0';
-    panel.style.width = '33.33vw';
+    panel.style.width = '50vw';
     panel.style.height = '100vh';
     panel.style.background = '#232634';
     panel.style.color = '#fff';
@@ -235,25 +235,7 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
         panel.querySelector('h2').textContent = `Nearby Fire Stations for (${report.lat}, ${report.lon})`;
         const listDiv = panel.querySelector('#firestation-list');
         listDiv.innerHTML = '<div style="margin-bottom:1em;">Loading fire stations...</div>';
-
-        // Instead of fetching new fire stations, use the ones from main.js
-        // Assume stationMarkers is available globally (populated in main.js)
-        const stations = (window.stationMarkers || [])
-          .map(st => {
-            // Calculate distance using Leaflet if available
-            let dist = Infinity;
-            if (typeof L !== "undefined" && st.lat && st.lon) {
-              dist = L.latLng(Number(report.lat), Number(report.lon)).distanceTo(L.latLng(st.lat, st.lon)) * 0.000621371; // meters to miles
-            } else if (st.lat && st.lon) {
-              dist = haversineMiles(Number(report.lat), Number(report.lon), st.lat, st.lon);
-            }
-            return {
-              ...st,
-              dist
-            };
-          })
-          .sort((a, b) => a.dist - b.dist);
-
+        const stations = await getAllFireStations(Number(report.lat), Number(report.lon));
         if (stations.length === 0) {
           listDiv.innerHTML = '<div>No fire stations found nearby.</div>';
         } else {
@@ -292,8 +274,8 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
 
             // Use cached address if available
             let address = null;
-            if (window.stationDetailsById && window.stationDetailsById[st.stationId?.toString()]) {
-              address = window.stationDetailsById[st.stationId.toString()].address;
+            if (window.stationDetailsById && window.stationDetailsById[st.id?.toString()]) {
+              address = window.stationDetailsById[st.id.toString()].address;
             }
             if (address && address !== "Unknown") {
               stDiv.querySelector('.station-address').textContent = address;
