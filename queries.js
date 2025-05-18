@@ -117,7 +117,7 @@ function getOrCreateDropdownPanel() {
     panel.style.position = 'fixed';
     panel.style.top = '0';
     panel.style.right = '0';
-    panel.style.width = '40vw';
+    panel.style.width = '50vw';
     panel.style.height = '100vh';
     panel.style.background = '#232634';
     panel.style.color = '#fff';
@@ -278,7 +278,7 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
             stDiv.style.borderRadius = '8px';
             stDiv.style.transition = 'box-shadow 0.2s';
             stDiv.style.cursor = 'pointer';
-            stDiv.style.position = 'relative'; // Needed for absolute positioning of the button
+            stDiv.style.position = 'relative';
 
             // Add "CLOSEST STATION" badge for the first (closest) station
             const badge = (i === 0)
@@ -308,14 +308,15 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
             dispatchBtn.style.cursor = 'pointer';
             dispatchBtn.style.zIndex = '10';
 
-            // Example click handler (customize as needed)
+            // Dispatch click handler: deletes the fire report from SheetDB
             dispatchBtn.addEventListener('click', function(e) {
               e.stopPropagation();
+              // Remove the fire report from the DOM
               li.remove();
               panel.style.transform = 'translateX(100%)';
               setTimeout(() => { panel.style.display = 'none'; }, 400);
 
-              // Remove from SheetDB using the unique timestamp
+              // Remove from SheetDB using the unique timestamp from the fire report
               fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/Time/${report.Time}`, {
                 method: 'DELETE'
               })
