@@ -10,26 +10,44 @@ async function reverseGeocode(lat, lon) {
   }
 }
 
-// Fetch fire reports from Google Apps Script Web App
-fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZtDj-kAAbjKXdFMAgeopNdcqefphX5o3W2V4/exec')
+// Fetch fire reports from SheetDB
+fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
   .then(res => res.json())
   .then(fireReports => {
-    console.log("Number of queries in Google Sheet:", fireReports.length); // Log the count
-    fireReports.forEach((row, i) => {
-      console.log(`Row ${i + 1}:`, row);
-    });
+    console.log("Number of queries in SheetDB:", fireReports.length); // Log the count
     const ul = document.getElementById('incident-list');
-    fireReports.forEach(async report => {
+    fireReports.forEach(async (report, idx) => {
       const li = document.createElement('li');
       li.innerHTML = `
         <strong>Fire Address:</strong> <span class="fire-address">Loading...</span><br>
         <strong>Strength:</strong> ${report.strength}<br>
         <strong>Coordinates:</strong> (${report.lat}, ${report.lon})<br>
         <strong>Reported At:</strong> ${report.reportedAt ? new Date(report.reportedAt).toLocaleString() : "Unknown"}
+        <button class="remove-btn" style="float:right; margin-left:10px;">−</button>
       `;
       ul.appendChild(li);
+
       // Fetch and update address
       const address = await reverseGeocode(report.lat, report.lon);
       li.querySelector('.fire-address').textContent = address;
+
+      // Remove button functionality (removes from DOM and SheetDB)
+      li.querySelector('.remove-btn').addEventListener('click', async function() {
+        // Remove from DOM immediately
+        li.remove();
+
+        // Remove from SheetDB (delete by unique fields, e.g., lat, lon, strength)
+        // This will delete all rows matching these values
+        fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/lat/${report.lat}/lon/${report.lon}/strength/${report.strength}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          console.log('Deleted from SheetDB:', data);
+        })
+        .catch(err => {
+          console.error('Failed to delete from SheetDB:', err);
+        });
+      });
     });
   });
