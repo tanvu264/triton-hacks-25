@@ -1,4 +1,11 @@
 #map {
-  height: 100vh;
+  height: calc(100vh - 70px); /* Subtract navbar height */
   width: 100%;
+  padding-top: 0;
+}
+
+.fire-div-icon {
+  font-size: 2rem;
+  line-height: 1;
+  text-align: center;
 }
