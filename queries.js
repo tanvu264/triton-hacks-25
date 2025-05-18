@@ -268,8 +268,15 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
             stDiv.style.borderRadius = '8px';
             stDiv.style.transition = 'box-shadow 0.2s';
             stDiv.style.cursor = 'pointer';
+
+            // Add "CLOSEST STATION" badge for the first (closest) station
+            const badge = (i === 0)
+              ? `<span style="float:right; background:#ff9800; color:#232634; font-weight:bold; padding:4px 10px; border-radius:6px; margin-left:10px;">CLOSEST STATION</span>`
+              : '';
+
             stDiv.innerHTML = `
-              <strong>${i + 1}. ${st.name}</strong><br>
+              <strong>${i + 1}. ${st.name}</strong>
+              ${badge}<br>
               <span class="station-address">Loading address...</span><br>
               <span>Distance: ${st.dist.toFixed(2)} miles</span>
             `;
