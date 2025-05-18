@@ -36,11 +36,11 @@ fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
         // Remove from DOM immediately
         li.remove();
 
-        // Log the id being deleted
-        console.log('Deleting report with id:', report.ID);
+        // Log the timestamp being deleted
+        console.log('Deleting report with timestamp:', report.Time);
 
-        // Remove from SheetDB using the unique id
-        fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/ID/${report.ID}`, {
+        // Remove from SheetDB using the unique timestamp
+        fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/Time/${report.Time}`, {
           method: 'DELETE'
         })
         .then(res => res.json())

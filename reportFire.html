@@ -111,15 +111,10 @@
       fires = JSON.parse(localStorage.getItem('reportedFires')) || [];
     } catch (e) {}
 
-    // Generate a unique ID (incremental based on existing fires)
-    let newId = 1;
-    if (fires.length > 0) {
-      newId = Math.max(...fires.map(f => f.ID || 0)) + 1;
-    }
-
-    // Add the new fire report with coordinates and capital ID
+    // Remove ID logic and use a timestamp for Time
+    // Add the new fire report with coordinates and a unique timestamp
     const newReport = {
-      ID: newId,
+      Time: Date.now(), // Use current timestamp as unique identifier
       address,
       strength: Number(strength),
       lat: coords.lat,
