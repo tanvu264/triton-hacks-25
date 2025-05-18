@@ -158,7 +158,7 @@ function getOrCreateDropdownPanel() {
 }
 
 // Fetch fire reports from Google Apps Script Web App
-fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZtDj-kAAbjKXdFMAgeopNdcqefphX5o3W2V4/exec')
+fetch('https://script.google.com/macros/s/AKfycbzJEO3qrbzay2-xV71EqeKxWEsdmIkNp58BC8znh0pB4f-re3HM79a7nz_YV8Dxxc6x/exec')
   .then(res => res.json())
   .then(fireReports => {
     console.log("Number of queries in SheetDB:", fireReports.length); // Log the count

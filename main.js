@@ -295,9 +295,8 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
   console.error("Failed to fetch fire stations:", err);
 });
 
-<<<<<<< HEAD
-// Fetch fire reports from SheetDB
-fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZtDj-kAAbjKXdFMAgeopNdcqefphX5o3W2V4/exec')
+// Fetch fire reports from Google Apps Script
+fetch('https://script.google.com/macros/s/AKfycbzJEO3qrbzay2-xV71EqeKxWEsdmIkNp58BC8znh0pB4f-re3HM79a7nz_YV8Dxxc6x/exec')
   .then(res => res.json())
   .then(data => {
     // Map each row to only lat, lon, and strength (convert to numbers if needed)
@@ -312,11 +311,9 @@ fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZt
     PlotFires();
   })
   .catch(err => {
-    console.error("Failed to fetch fire reports from SheetDB:", err);
+    console.error("Failed to fetch fire reports from Google Apps Script:", err);
   });
 
-=======
->>>>>>> c599d3b47dd1ebac8ffe7a871094eb5a4f723074
 // Call this function after you set userLatLng (from geolocation or manual input)
 async function findNearbyHydrants(lat, lon, radiusMeters = 500) {
   // Overpass QL: find fire hydrants within radius
