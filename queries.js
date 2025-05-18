@@ -157,8 +157,8 @@ function getOrCreateDropdownPanel() {
   return panel;
 }
 
-// Fetch fire reports from SheetDB
-fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
+// Fetch fire reports from Google Apps Script Web App
+fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
   .then(res => res.json())
   .then(fireReports => {
     console.log("Number of queries in SheetDB:", fireReports.length); // Log the count

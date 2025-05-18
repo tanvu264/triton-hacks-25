@@ -62,6 +62,8 @@ function PlotFires() {
         `Closest fire stations:<br>` +
         closest.map(st => `${st.name}: ${Math.round(st.dist*0.000621371*10)/10} mi`).join('<br>')
       );
+    L.marker([lat, lon], { icon: fireIcon }).addTo(map);
+    console.log(findFiveClosestStations(lat, lon));
   });
 }
 
@@ -113,6 +115,15 @@ map.on('locationerror', async function(e) {
 // Custom icons
 const redIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const fireIcon = new L.Icon({
+  iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-orange.png', // or use a fire emoji icon if you prefer
   shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -304,6 +315,25 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
 .catch(err => {
   console.error("Failed to fetch fire stations:", err);
 });
+
+// Fetch fire reports from Google Apps Script
+fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
+  .then(res => res.json())
+  .then(data => {
+    // Map each row to only lat, lon, and strength (convert to numbers if needed)
+    const reports = data.map(row => ({
+      lat: Number(row.lat),
+      lon: Number(row.lon),
+      strength: Number(row.strength)
+    }));
+    // Save to localStorage
+    localStorage.setItem('reportedFires', JSON.stringify(reports));
+    // Optionally, re-plot fires if needed:
+    PlotFires();
+  })
+  .catch(err => {
+    console.error("Failed to fetch fire reports from Google Apps Script:", err);
+  });
 
 // Call this function after you set userLatLng (from geolocation or manual input)
 async function findNearbyHydrants(lat, lon, radiusMeters = 500) {
