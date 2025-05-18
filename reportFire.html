@@ -127,7 +127,7 @@
     localStorage.setItem('reportedFires', JSON.stringify(fires));
 
     // --- Push to SheetDB (Google Sheets) ---
-    fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZtDj-kAAbjKXdFMAgeopNdcqefphX5o3W2V4/exec', {
+    fetch('https://script.google.com/macros/s/AKfycbxs2K2OUNQrZa6Pn3ItGjKB68BhYJ4x-WFncyy8eSK6aQc4q24gD0WHD9X3s1YenTM-/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: newReport })
