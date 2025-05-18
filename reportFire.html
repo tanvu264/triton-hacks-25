@@ -114,12 +114,12 @@
     // Generate a unique ID (incremental based on existing fires)
     let newId = 1;
     if (fires.length > 0) {
-      newId = Math.max(...fires.map(f => f.id || 0)) + 1;
+      newId = Math.max(...fires.map(f => f.ID || 0)) + 1;
     }
 
-    // Add the new fire report with coordinates and ID
+    // Add the new fire report with coordinates and capital ID
     const newReport = {
-      id: newId,
+      ID: newId,
       address,
       strength: Number(strength),
       lat: coords.lat,
