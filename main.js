@@ -33,7 +33,20 @@ function highlightClosestStation() {
   }
 }
 
-function findClosestStations() {
+function findClosestStation(lat, lon) {
+  let minDist = Infinity;
+  let closest = null;
+  stationMarkers.forEach(st => {
+    const dist = map.distance([lat, lon], L.latLng(st.lat, st.lon));
+    if (dist < minDist) {
+      minDist = dist;
+      closest = st;
+    }
+  });
+  return closest;
+}
+
+function PlotFires() {
   const reports = JSON.parse(localStorage.getItem('reportedFires'))
   const closestStations = []
   
@@ -51,12 +64,9 @@ function findClosestStations() {
     });
     closestStations.push(temp)
     */
+    console.log(findClosestStation(lat, lon).name)
   });
-
-  return closestStations;
 }
-
-findClosestStations();
 
 
 // Listen for locationfound event to get user coordinates
@@ -65,6 +75,7 @@ map.on('locationfound', function(e) {
   L.marker(userLatLng).addTo(map).bindPopup("You are here").openPopup();
   highlightClosestStation();
   findNearbyHydrants(userLatLng.lat, userLatLng.lng, 500); // <-- add this
+  PlotFires()
 });
 
 // Helper: Geocode address to lat/lon using Nominatim
