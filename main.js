@@ -181,7 +181,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
     // Get phone (if available)
     const phone = station.tags?.phone || station.tags?.["contact:phone"] || "Unknown";
 
-    // Store station details in localStorage
+    // Store station details in localStorage (including address)
     const stationDetails = {
       name,
       address,
@@ -190,6 +190,11 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
       lon
     };
     localStorage.setItem(`stationDetails_${stationId}`, JSON.stringify(stationDetails));
+
+    // --- Add to temp storage for quick lookup ---
+    // Use a global object for quick access by id
+    if (!window.stationDetailsById) window.stationDetailsById = {};
+    window.stationDetailsById[stationId] = stationDetails;
 
     // Get operational status for this station
     const operationalStatus = loadOperationalStatus();
