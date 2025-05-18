@@ -1,19 +1,19 @@
-// Step 1: Initialize map (temporary center, will update to user location)
+// initialize map (temp center, will update to user location)
 const map = L.map('map').setView([32.7157, -117.1611], 12); // San Diego
 
-// Step 2: Add OpenStreetMap tiles
+// add OpenStreetMap tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// Center map on user's location
+// center map on user location
 map.locate({ setView: true, maxZoom: 14 });
 
 let userLatLng = null;
 let stationMarkers = [];
 let stationsLoaded = false;
 
-// Helper to find and highlight the closest station
+
 function highlightClosestStation() {
   if (!userLatLng || stationMarkers.length === 0) return;
   let minDist = Infinity;
@@ -26,7 +26,7 @@ function highlightClosestStation() {
     }
   });
   if (closest) {
-    closest.marker.openPopup(); // Just open the popup, don't re-bind
+    closest.marker.openPopup(); 
     closest.marker.bindPopup(`Closest fire station: ${Math.round(minDist*0.000621371*10)/10} mi`);
     // Optionally, pan to it:
     // map.panTo([closest.lat, closest.lon]);
@@ -41,11 +41,11 @@ function findFiveClosestStations(lat, lon) {
   
   console.log(stationsWithDist);
 
-  stationsWithDist.sort((a, b)=> {
-    a.dist - b.dist;
-  })
+  stationsWithDist.sort((a, b)=> a.dist - b.dist);
 
-  return stationsWithDist.slice(0, 5); 
+  const fiveClosest = stationsWithDist.slice(0, 5)
+  console.log(fiveClosest);
+  return fiveClosest; 
 }
 
 function PlotFires() {
@@ -54,8 +54,14 @@ function PlotFires() {
   reports.forEach((report) => {
     const lat = report['lat'];
     const lon = report['lon'];
-    L.marker([lat, lon]).addTo(map);
-    console.log(findFiveClosestStations(lat, lon));
+    const closest = findFiveClosestStations(lat, lon);
+
+    L.marker([lat, lon]).addTo(map)
+      .bindPopup(
+        `<b>Fire at ${report['address']}</b><br>`+ 
+        `Closest fire stations:<br>` +
+        closest.map(st => `${st.name}: ${Math.round(st.dist*0.000621371*10)/10} mi`).join('<br>')
+      );
   });
 }
 
@@ -65,8 +71,8 @@ map.on('locationfound', function(e) {
   userLatLng = e.latlng;
   L.marker(userLatLng).addTo(map).bindPopup("You are here").openPopup();
   highlightClosestStation();
-  findNearbyHydrants(userLatLng.lat, userLatLng.lng, 500); // <-- add this
-  PlotFires()
+  findNearbyHydrants(userLatLng.lat, userLatLng.lng, 500);
+  //PlotFires()
   //findFiveClosestStations()
 });
 
@@ -95,7 +101,7 @@ map.on('locationerror', async function(e) {
       map.setView([coords.lat, coords.lng], 13);
       L.marker(coords).addTo(map).bindPopup("Your entered location").openPopup();
       highlightClosestStation();
-      findNearbyHydrants(coords.lat, coords.lng, 2000); // <-- add this
+      findNearbyHydrants(coords.lat, coords.lng, 2000);
     } else {
       alert("Sorry, could not find that address.");
     }
@@ -290,6 +296,10 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
   });
   stationsLoaded = true;
   highlightClosestStation();
+  findNearbyHydrants(userLatLng.lat, userLatLng.lng, 500)
+  console.log('Fire at user:' );
+  console.log(findFiveClosestStations(userLatLng.lat, userLatLng.lng));
+  PlotFires();
 })
 .catch(err => {
   console.error("Failed to fetch fire stations:", err);
