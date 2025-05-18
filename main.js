@@ -296,7 +296,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
 });
 
 // Fetch fire reports from Google Apps Script
-fetch('https://script.google.com/macros/s/AKfycbxs2K2OUNQrZa6Pn3ItGjKB68BhYJ4x-WFncyy8eSK6aQc4q24gD0WHD9X3s1YenTM-/exec')
+fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
   .then(res => res.json())
   .then(data => {
     // Map each row to only lat, lon, and strength (convert to numbers if needed)
