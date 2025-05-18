@@ -92,7 +92,7 @@
   }
 
   document.getElementById('fireForm').addEventListener('submit', async function(e) {
-    console.log("Form submitted!"); // Add this line
+    console.log("Form submitted!");
     e.preventDefault();
     const address = document.getElementById('address').value.trim();
     const strength = document.getElementById('strength').value;
@@ -111,8 +111,15 @@
       fires = JSON.parse(localStorage.getItem('reportedFires')) || [];
     } catch (e) {}
 
-    // Add the new fire report with coordinates
+    // Generate a unique ID (incremental based on existing fires)
+    let newId = 1;
+    if (fires.length > 0) {
+      newId = Math.max(...fires.map(f => f.id || 0)) + 1;
+    }
+
+    // Add the new fire report with coordinates and ID
     const newReport = {
+      id: newId,
       address,
       strength: Number(strength),
       lat: coords.lat,

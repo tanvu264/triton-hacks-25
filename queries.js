@@ -36,9 +36,11 @@ fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
         // Remove from DOM immediately
         li.remove();
 
-        // Remove from SheetDB (delete by unique fields, e.g., lat, lon, strength)
-        // This will delete all rows matching these values
-        fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/lat/${report.lat}/lon/${report.lon}/strength/${report.strength}`, {
+        // Log the id being deleted
+        console.log('Deleting report with id:', report.ID);
+
+        // Remove from SheetDB using the unique id
+        fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/ID/${report.ID}`, {
           method: 'DELETE'
         })
         .then(res => res.json())
