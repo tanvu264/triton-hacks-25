@@ -17,5 +17,15 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="main.js"></script>
+  <script>
+    fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
+      .then(res => res.json())
+      .then(data => {
+        // Print each row (tie) to the console
+        data.forEach((row, i) => {
+          console.log(`Row ${i + 1}:`, row);
+        });
+      });
+  </script>
 </body>
 </html>

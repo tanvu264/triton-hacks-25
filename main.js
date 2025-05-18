@@ -49,7 +49,7 @@ function PlotFires() {
     const lat = report['lat'];
     const lon = report['lon'];
     L.marker([lat, lon], { icon: fireIcon }).addTo(map);
-    //console.log(findClosestStation(lat, lon).name);
+    console.log(findFiveClosestStations(lat, lon));
   });
 }
 
@@ -60,7 +60,6 @@ map.on('locationfound', function(e) {
   L.marker(userLatLng).addTo(map).bindPopup("You are here").openPopup();
   highlightClosestStation();
   findNearbyHydrants(userLatLng.lat, userLatLng.lng, 500); // <-- add this
-  PlotFires()
 });
 
 // Helper: Geocode address to lat/lon using Nominatim
@@ -268,15 +267,6 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
         label.style.color = color;
         // Save to localStorage
         localStorage.setItem(`stationGas_${stationId}`, val);
-
-        // Update marker icon color live
-        if (val < 30) {
-          marker.setIcon(redIcon);
-        } else if (val < 70) {
-          marker.setIcon(yellowIcon);
-        } else {
-          marker.setIcon(greenIcon);
-        }
       });
 
       // Save gas level before navigating to details page
@@ -288,6 +278,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
   });
   stationsLoaded = true;
   highlightClosestStation();
+  PlotFires()
 })
 .catch(err => {
   console.error("Failed to fetch fire stations:", err);
