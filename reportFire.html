@@ -78,55 +78,68 @@
     </form>
   </div>
   <script>
-    // Geocode function using Nominatim API
-    async function geocodeAddress(address) {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
-      try {
-        const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
-        const data = await res.json();
-        if (data && data.length > 0) {
-          return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-        }
-      } catch (e) {
-        // Optionally handle error
+  // Geocode function using Nominatim API
+  async function geocodeAddress(address) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+    try {
+      const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
       }
-      return null;
+    } catch (e) {}
+    return null;
+  }
+
+  document.getElementById('fireForm').addEventListener('submit', async function(e) {
+    console.log("Form submitted!"); // Add this line
+    e.preventDefault();
+    const address = document.getElementById('address').value.trim();
+    const strength = document.getElementById('strength').value;
+
+    // Geocode the address before saving
+    const coords = await geocodeAddress(address);
+
+    if (!coords) {
+      alert("Could not find the location for the entered address.");
+      return;
     }
 
-    document.getElementById('fireForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const address = document.getElementById('address').value.trim();
-      const strength = document.getElementById('strength').value;
+    // Get existing fires or start a new array
+    let fires = [];
+    try {
+      fires = JSON.parse(localStorage.getItem('reportedFires')) || [];
+    } catch (e) {}
 
-      // Geocode the address before saving
-      const coords = await geocodeAddress(address);
+    // Add the new fire report with coordinates
+    const newReport = {
+      address,
+      strength: Number(strength),
+      lat: coords.lat,
+      lon: coords.lon,
+      reportedAt: new Date().toISOString()
+    };
+    fires.push(newReport);
 
-      if (!coords) {
-        alert("Could not find the location for the entered address.");
-        return;
-      }
+    // Save back to localStorage
+    localStorage.setItem('reportedFires', JSON.stringify(fires));
 
-      // Get existing fires or start a new array
-      let fires = [];
-      try {
-        fires = JSON.parse(localStorage.getItem('reportedFires')) || [];
-      } catch (e) {}
-
-      // Add the new fire report with coordinates
-      fires.push({
-        address,
-        strength: Number(strength),
-        lat: coords.lat,
-        lon: coords.lon,
-        reportedAt: new Date().toISOString()
-      });
-
-      // Save back to localStorage
-      localStorage.setItem('reportedFires', JSON.stringify(fires));
-
+    // --- Push to SheetDB (Google Sheets) ---
+    fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: newReport })
+    })
+    .then(res => res.json())
+    .then(() => {
       alert(`Fire reported!\nAddress: ${address}\nStrength: ${strength}\nLocation: ${coords.lat}, ${coords.lon}`);
-      this.reset();
+      document.getElementById('fireForm').reset();
+    })
+    .catch(() => {
+      alert("Fire reported locally, but failed to save to Google Sheets.");
+      document.getElementById('fireForm').reset();
     });
+  });
   </script>
 </body>
 </html>
