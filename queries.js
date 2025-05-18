@@ -15,6 +15,9 @@ fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZt
   .then(res => res.json())
   .then(fireReports => {
     console.log("Number of queries in Google Sheet:", fireReports.length); // Log the count
+    fireReports.forEach((row, i) => {
+      console.log(`Row ${i + 1}:`, row);
+    });
     const ul = document.getElementById('incident-list');
     fireReports.forEach(async report => {
       const li = document.createElement('li');
