@@ -87,12 +87,17 @@ async function getAllFireStations(lat, lon) {
     });
     const data = await res.json();
     if (data.elements && data.elements.length > 0) {
-      // Map and sort by distance (in miles)
+      // Use Leaflet's distance formula for more accurate distance
       return data.elements
         .map(el => {
           const elLat = el.lat || (el.center && el.center.lat);
           const elLon = el.lon || (el.center && el.center.lon);
-          const dist = (elLat && elLon) ? haversineMiles(lat, lon, elLat, elLon) : Infinity;
+          let dist = Infinity;
+          if (typeof L !== "undefined" && elLat && elLon) {
+            dist = L.latLng(lat, lon).distanceTo(L.latLng(elLat, elLon)) * 0.000621371; // meters to miles
+          } else if (elLat && elLon) {
+            dist = haversineMiles(lat, lon, elLat, elLon);
+          }
           return {
             name: (el.tags && el.tags.name) ? el.tags.name : "Unnamed Fire Station",
             lat: elLat,
