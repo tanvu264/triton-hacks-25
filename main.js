@@ -62,7 +62,6 @@ function PlotFires() {
       `Closest fire stations:<br>` +
       closest.map(st => `${st.name}: ${Math.round(st.dist*0.000621371*10)/10} mi`).join('<br>')
       );
-    console.log(findFiveClosestStations(lat, lon));
   });
 }
 
@@ -122,7 +121,7 @@ const redIcon = new L.Icon({
 });
 
 const fireIcon = new L.Icon({
-  iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-orange.png', // or use a fire emoji icon if you prefer
+  iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-orange.png',
   shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -147,6 +146,18 @@ const greenIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
+
+
+// Add a blue icon for fire stations (classic fire station color)
+const stationIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/11210/11210082.png',
+  shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 
 // Helper to get operational status from localStorage
 function loadOperationalStatus() {

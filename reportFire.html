@@ -107,16 +107,34 @@
       return;
     }
 
+    // Reverse geocode to get a formatted address from lat/lon
+    async function reverseGeocode(lat, lon) {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+      try {
+        const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+        const data = await res.json();
+        if (data && data.display_name) {
+          return data.display_name;
+        }
+      } catch (e) {
+        console.error("Reverse geocoding error:", e);
+      }
+      return `${lat}, ${lon}`;
+    }
+
     // Get existing fires or start a new array
     let fires = [];
     try {
       fires = JSON.parse(localStorage.getItem('reportedFires')) || [];
     } catch (e) {}
 
+    // Get the formatted address from lat/lon
+    const formattedAddress = await reverseGeocode(coords.lat, coords.lon);
+
     // Create the new fire report
     const newReport = {
       Time: Date.now(),
-      address,
+      address: formattedAddress, // Save the formatted address
       strength: Number(strength),
       lat: coords.lat,
       lon: coords.lon,
@@ -133,8 +151,8 @@
         'https://sheetdb.io/api/v1/5d1lphwnzpuau', 
         {
           method: 'POST',
-          redirect: 'follow', // Required for Google Apps Script redirects
-          mode: 'cors',       // Explicitly request CORS mode
+          redirect: 'follow',
+          mode: 'cors',
           headers: {
             'Content-Type': 'application/json'
           },
@@ -142,11 +160,10 @@
         }
       );
       
-      // For Google Apps Script, we usually get text back, not JSON
       const result = await response.text();
       console.log("Server response:", result);
       
-      alert(`Fire reported!\nAddress: ${address}\nStrength: ${strength}\nLocation: ${coords.lat}, ${coords.lon}`);
+      alert(`Fire reported!\nAddress: ${formattedAddress}\nStrength: ${strength}\nLocation: ${coords.lat}, ${coords.lon}`);
       document.getElementById('fireForm').reset();
     } catch (error) {
       console.error("Error submitting to Google Sheets:", error);
