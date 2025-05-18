@@ -290,7 +290,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
 });
 
 // Fetch fire reports from SheetDB
-fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
+fetch('https://script.google.com/macros/s/AKfycbwgqvxvyjpzw5dfaGdSVIS9hMV4PKqsZtDj-kAAbjKXdFMAgeopNdcqefphX5o3W2V4/exec')
   .then(res => res.json())
   .then(data => {
     // Map each row to only lat, lon, and strength (convert to numbers if needed)
