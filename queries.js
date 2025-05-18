@@ -17,8 +17,6 @@ async function findClosestFireStation(lat, lon) {
     [out:json];
     (
       node["amenity"="fire_station"](around:10000,${lat},${lon});
-      way["amenity"="fire_station"](around:10000,${lat},${lon});
-      relation["amenity"="fire_station"](around:10000,${lat},${lon});
     );
     out center;
   `;
@@ -119,7 +117,7 @@ function getOrCreateDropdownPanel() {
     panel.style.position = 'fixed';
     panel.style.top = '0';
     panel.style.right = '0';
-    panel.style.width = '50vw';
+    panel.style.width = '40vw';
     panel.style.height = '100vh';
     panel.style.background = '#232634';
     panel.style.color = '#fff';
@@ -155,6 +153,11 @@ function getOrCreateDropdownPanel() {
         mainContent.style.transition = 'margin-right 0.4s cubic-bezier(.4,0,.2,1)';
         mainContent.style.marginRight = '0';
       }
+      const header = document.querySelector('header, .navbar');
+      if (header) {
+        header.style.transition = 'margin-right 0.4s cubic-bezier(.4,0,.2,1)';
+        header.style.marginRight = '0';
+      }
     };
   }
   return panel;
@@ -168,14 +171,33 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
     const ul = document.getElementById('incident-list');
     fireReports.forEach(async (report, idx) => {
       const li = document.createElement('li');
+      li.style.position = 'relative'; // Needed for absolute positioning of the button
+
       li.innerHTML = `
         <strong>Fire Address:</strong> <span class="fire-address">Loading...</span><br>
         <strong>Strength:</strong> ${report.strength}<br>
         <strong>Coordinates:</strong> (${report.lat}, ${report.lon})<br>
         <strong>Reported At:</strong> ${report.reportedAt ? new Date(report.reportedAt).toLocaleString() : "Unknown"}<br>
         <strong>Closest Fire Station:</strong> <span class="fire-station">Loading...</span>
-        <button class="remove-btn" style="float:right; margin-left:10px;">−</button>
       `;
+
+      // Create the remove button and absolutely position it in the top right
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = '−';
+      removeBtn.style.position = 'absolute';
+      removeBtn.style.top = '8px';
+      removeBtn.style.right = '16px';
+      removeBtn.style.background = '#FF5252';
+      removeBtn.style.border = 'none';
+      removeBtn.style.color = 'none';
+      removeBtn.style.fontSize = '1.5em';
+      removeBtn.style.cursor = 'pointer';
+      removeBtn.style.padding = '0.2em 0.5em';
+      removeBtn.style.lineHeight = '1';
+      removeBtn.style.zIndex = '10';
+
+      li.appendChild(removeBtn);
       ul.appendChild(li);
 
       // Fetch and update address
@@ -187,7 +209,7 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
       li.querySelector('.fire-station').textContent = station;
 
       // Remove button functionality (removes from DOM and SheetDB)
-      li.querySelector('.remove-btn').addEventListener('click', async function() {
+      removeBtn.addEventListener('click', async function() {
         // Remove from DOM immediately
         li.remove();
 
@@ -231,6 +253,12 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
           mainContent.style.transition = 'margin-right 0.4s cubic-bezier(.4,0,.2,1)';
           mainContent.style.marginRight = '50vw';
         }
+        // Move the header (if you have a <header> or .navbar)
+        const header = document.querySelector('header, .navbar');
+        if (header) {
+          header.style.transition = 'margin-right 0.4s cubic-bezier(.4,0,.2,1)';
+          header.style.marginRight = '50vw';
+        }
 
         panel.querySelector('h2').textContent = `Nearby Fire Stations for (${report.lat}, ${report.lon})`;
         const listDiv = panel.querySelector('#firestation-list');
@@ -250,11 +278,59 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
             stDiv.style.borderRadius = '8px';
             stDiv.style.transition = 'box-shadow 0.2s';
             stDiv.style.cursor = 'pointer';
+            stDiv.style.position = 'relative'; // Needed for absolute positioning of the button
+
+            // Add "CLOSEST STATION" badge for the first (closest) station
+            const badge = (i === 0)
+              ? `<span style="background:#ff9800; color:#232634; font-weight:bold; padding:4px 10px; border-radius:6px; margin-left:10px;">CLOSEST STATION</span>`
+              : '';
+
             stDiv.innerHTML = `
-              <strong>${i + 1}. ${st.name}</strong><br>
+              <strong>${i + 1}. ${st.name}</strong>
+              ${badge}<br>
               <span class="station-address">Loading address...</span><br>
               <span>Distance: ${st.dist.toFixed(2)} miles</span>
             `;
+
+            // Create the red dispatch button
+            const dispatchBtn = document.createElement('button');
+            dispatchBtn.textContent = 'Dispatch';
+            dispatchBtn.style.position = 'absolute';
+            dispatchBtn.style.top = '8px';
+            dispatchBtn.style.right = '8px';
+            dispatchBtn.style.background = '#FF5252';
+            dispatchBtn.style.color = '#fff';
+            dispatchBtn.style.border = 'none';
+            dispatchBtn.style.borderRadius = '6px';
+            dispatchBtn.style.fontWeight = 'bold';
+            dispatchBtn.style.fontSize = '1em';
+            dispatchBtn.style.padding = '0.3em 1em';
+            dispatchBtn.style.cursor = 'pointer';
+            dispatchBtn.style.zIndex = '10';
+
+            // Example click handler (customize as needed)
+            dispatchBtn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              li.remove();
+              panel.style.transform = 'translateX(100%)';
+              setTimeout(() => { panel.style.display = 'none'; }, 400);
+
+              // Remove from SheetDB using the unique timestamp
+              fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/Time/${report.Time}`, {
+                method: 'DELETE'
+              })
+              .then(res => res.json())
+              .then(data => {
+                console.log('Dispatched and deleted from SheetDB:', data);
+              })
+              .catch(err => {
+                console.error('Failed to delete from SheetDB:', err);
+              });
+              alert(`Dispatching ${st.name}`);
+            });
+
+            stDiv.appendChild(dispatchBtn);
+
             // Highlight outline on hover
             stDiv.addEventListener('mouseenter', function() {
               stDiv.style.boxShadow = '0 0 0 2px #ff9800';
@@ -267,8 +343,8 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
 
             // Use cached address if available
             let address = null;
-            if (window.stationDetailsById && window.stationDetailsById[st.id?.toString()]) {
-              address = window.stationDetailsById[st.id.toString()].address;
+            if (window.stationDetailsById && window.stationDetailsById[st.stationId?.toString()]) {
+              address = window.stationDetailsById[st.stationId.toString()].address;
             }
             if (address && address !== "Unknown") {
               stDiv.querySelector('.station-address').textContent = address;

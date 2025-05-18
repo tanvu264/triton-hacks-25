@@ -123,7 +123,7 @@ const redIcon = new L.Icon({
 const fireIcon = new L.Icon({
   iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-orange.png',
   shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
+  iconSize: [25 *0.8, 41 * 0.8],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
@@ -152,7 +152,7 @@ const greenIcon = new L.Icon({
 const stationIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/11210/11210082.png',
   shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
+  iconSize: [25, 25],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
@@ -250,14 +250,7 @@ fetch("https://overpass.kumi.systems/api/interpreter", {
     `;
 
     // Choose marker icon based on gas level
-    let iconToUse;
-    if (gasLevel < 30) {
-      iconToUse = redIcon; // red for low gas
-    } else if (gasLevel < 70) {
-      iconToUse = yellowIcon; // yellow for medium gas
-    } else {
-      iconToUse = greenIcon; // green for high gas
-    }
+    let iconToUse = stationIcon;
 
     const marker = L.marker([lat, lon], { icon: iconToUse }).addTo(map);
     stationMarkers.push({ marker, lat, lon, stationId, name });
