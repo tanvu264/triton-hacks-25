@@ -14,6 +14,7 @@ async function reverseGeocode(lat, lon) {
 fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
   .then(res => res.json())
   .then(fireReports => {
+    console.log("Number of queries in SheetDB:", fireReports.length); // Log the count
     const ul = document.getElementById('incident-list');
     fireReports.forEach(async report => {
       const li = document.createElement('li');
