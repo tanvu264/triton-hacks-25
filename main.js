@@ -33,38 +33,23 @@ function highlightClosestStation() {
   }
 }
 
-function findClosestStation(lat, lon) {
-  let minDist = Infinity;
-  let closest = null;
+function findFiveClosestStations(lat, lon) {
+  const closestStations = [];
   stationMarkers.forEach(st => {
     const dist = map.distance([lat, lon], L.latLng(st.lat, st.lon));
-    if (dist < minDist) {
-      minDist = dist;
-      closest = st;
-    }
+    closestStations.push(dist);
   });
-  return closest;
+  return closestStations.sort((a, b) => a - b).slice(0, 5); //ascending order
 }
 
 function PlotFires() {
-  const reports = JSON.parse(localStorage.getItem('reportedFires'))
-  const closestStations = []
+  const reports = JSON.parse(localStorage.getItem('reportedFires'));
   
   reports.forEach((report) => {
-    const lat = report['lat']
-    const lon = report['lon']
-    const marker = L.marker([lat, lon]).addTo(map);
-    const temp = []
-    /**
-    stationMarkers.forEach(st => {
-      const dist = map.distance(userLatLng, L.latLng(st.lat, st.lon));
-      if (dist < radius) {
-        temp.push(dist)
-      }
-    });
-    closestStations.push(temp)
-    */
-    console.log(findClosestStation(lat, lon).name)
+    const lat = report['lat'];
+    const lon = report['lon'];
+    L.marker([lat, lon]).addTo(map);
+    //console.log(findClosestStation(lat, lon).name);
   });
 }
 
