@@ -237,19 +237,29 @@ fetch('https://sheetdb.io/api/v1/n8h7gje9zs2se')
           listDiv.innerHTML = '<div>No fire stations found nearby.</div>';
         } else {
           listDiv.innerHTML = '';
-          // For each station, use cached address if available
-          for (let i = 0; i < stations.length; i++) {
+          // Show only the first five stations
+          for (let i = 0; i < Math.min(5, stations.length); i++) {
             const st = stations[i];
             const stDiv = document.createElement('div');
             stDiv.style.background = '#31344b';
             stDiv.style.marginBottom = '16px';
             stDiv.style.padding = '16px';
             stDiv.style.borderRadius = '8px';
+            stDiv.style.transition = 'box-shadow 0.2s';
+            stDiv.style.cursor = 'pointer';
             stDiv.innerHTML = `
               <strong>${i + 1}. ${st.name}</strong><br>
               <span class="station-address">Loading address...</span><br>
               <span>Distance: ${st.dist.toFixed(2)} miles</span>
             `;
+            // Highlight outline on hover
+            stDiv.addEventListener('mouseenter', function() {
+              stDiv.style.boxShadow = '0 0 0 2px #ff9800';
+            });
+            stDiv.addEventListener('mouseleave', function() {
+              stDiv.style.boxShadow = '';
+            });
+
             listDiv.appendChild(stDiv);
 
             // Use cached address if available
