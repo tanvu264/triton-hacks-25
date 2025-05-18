@@ -55,10 +55,10 @@ function PlotFires() {
     const lat = report['lat'];
     const lon = report['lon'];
     const closest = findFiveClosestStations(lat, lon);
-
+    console.log(report)
     L.marker([lat, lon], { icon: fireIcon }).addTo(map)
       .bindPopup(
-      `<b>Fire at ${report['address']}</b><br>`+ 
+      `<b>Fire at ${report.address}</b><br>`+ 
       `Closest fire stations:<br>` +
       closest.map(st => `${st.name}: ${Math.round(st.dist*0.000621371*10)/10} mi`).join('<br>')
       );
@@ -334,7 +334,8 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
     const reports = data.map(row => ({
       lat: Number(row.lat),
       lon: Number(row.lon),
-      strength: Number(row.strength)
+      strength: Number(row.strength),
+      address: row.address || "Unknown"
     }));
     // Save to localStorage
     localStorage.setItem('reportedFires', JSON.stringify(reports));
