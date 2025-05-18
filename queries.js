@@ -217,7 +217,7 @@ fetch('https://sheetdb.io/api/v1/5d1lphwnzpuau')
         console.log('Deleting report with timestamp:', report.Time);
 
         // Remove from SheetDB using the unique timestamp
-        fetch(`https://sheetdb.io/api/v1/n8h7gje9zs2se/Time/${report.Time}`, {
+        fetch(`https://sheetdb.io/api/v1/5d1lphwnzpuau/Time/${report.Time}`, {
           method: 'DELETE'
         })
         .then(res => res.json())
