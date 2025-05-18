@@ -1,38 +1,183 @@
+:root {
+  --bg-main: #181a20;
+  --bg-card: #232634;
+  --text-main: #f1f1f1;
+  --text-muted: #b0b8d1;
+  --accent: #ffd700;
+  --accent-hover: #ff5252;
+  --navbar-height: 64px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.25);
+}
+
+html, body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
 body {
-      background: #181a20;
-      color: #f1f1f1;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding-top: 70px;
-    }
-    .navbar {
-      width: 100%;
-      background: #232634;
-      padding: 18px 0;
-      display: flex;
-      justify-content: center;
-      gap: 36px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px #000a;
-    }
-    .navbar a {
-      color: #ffd700;
-      text-decoration: none;
-      font-size: 1.15em;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      padding: 8px 18px;
-      border-radius: 8px;
-      transition: background 0.2s, color 0.2s;
-    }
-    .navbar a:hover, .navbar a.active {
-      background: #181a20;
-      color: #ff5252;
-    }
+  padding-top: var(--navbar-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 140px;
+}
+
+.navbar {
+  width: 100vw;
+  background: var(--bg-card);
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: var(--navbar-height);
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.navbar a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 2em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 10px 22px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.navbar a:hover, .navbar a.active {
+  background: #181a20;
+  color: var(--accent-hover);
+}
+
+.container, .fire-form-container, .station-info, .truck-section {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  margin: 24px 0;
+  width: 100%;
+  max-width: 600px;
+}
+
+h1, h2, h3 {
+  color: var(--accent);
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  margin-top: 0;
+}
+
+label {
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  display: block;
+}
+
+input, select, textarea {
+  background: #31344b;
+  color: var(--text-main);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1em;
+  margin-bottom: 1.2em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--accent);
+}
+
+button, .submit-btn, .back-btn {
+  background: var(--accent-hover);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px #000a;
+}
+
+button:hover, .submit-btn:hover, .back-btn:hover {
+  background: #d32f2f;
+}
+
+ul, ol {
+  list-style: none;
+  padding: 0;
+  margin: 1.2em 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+ul li, ol li {
+  background: #20222b;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px 0 #000a, 0 0 0 2px #232634;
+  border: 2px solid #292c36;
+  color: var(--text-main);
+  padding: 28px 32px;
+  margin: 28px 0;
+  transition: background 0.2s, box-shadow 0.2s;
+  display: block;
+  font-size: 1.25em;
+}
+
+ul li:hover, ol li:hover {
+  background: #232634;
+  box-shadow: 0 10px 32px 0 #000c, 0 0 0 2px var(--accent);
+}
+
+ul li:last-child, ol li:last-child {
+  border-bottom: 2px solid #292c36;
+}
+
+/* Make headers inside list items bigger and orange */
+ul li h2, ol li h2,
+ul li h3, ol li h3,
+ul li h4, ol li h4 {
+  color: orange;
+  font-size: 2em;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 700px) {
+  .container, .fire-form-container, .station-info, .truck-section {
+    padding: 16px 6px;
+    margin: 12px 0;
+    max-width: 98vw;
+  }
+  .navbar {
+    gap: 10px;
+    font-size: 0.98em;
+    height: 56px;
+  }
+  body {
+    padding-top: 56px;
+  }
+}

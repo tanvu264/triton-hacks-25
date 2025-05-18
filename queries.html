@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queries</title>
+    <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+    <nav class="navbar">
+    <a href="index.html">Main</a>
+    <a href="queries.html">Queries</a>
+    <a href="reportFire.html">Report Fire</a>
+  </nav>
+    <h1>Fire Incident Queries</h1>
+    <ul id="incident-list">
+        <!-- Incidents will be inserted here -->
+    </ul>
+    <script>
+      // Helper: Reverse geocode lat/lon to address using Nominatim
+      async function reverseGeocode(lat, lon) {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+        try {
+          const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+          const data = await res.json();
+          return data.display_name || `${lat}, ${lon}`;
+        } catch (e) {
+          return `${lat}, ${lon}`;
+        }
+      }
+
+      // Load fire reports from localStorage
+      const fireReports = JSON.parse(localStorage.getItem('reportedFires')) || [];
+      const ul = document.getElementById('incident-list');
+
+      fireReports.forEach(async report => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>Fire Address:</strong> <span class="fire-address">Loading...</span><br>
+          <strong>Strength:</strong> ${report.strength}<br>
+          <strong>Coordinates:</strong> (${report.lat}, ${report.lon})<br>
+          <strong>Reported At:</strong> ${report.reportedAt ? new Date(report.reportedAt).toLocaleString() : "Unknown"}
+        `;
+        ul.appendChild(li);
+
+        // Fetch and update address
+        const address = await reverseGeocode(report.lat, report.lon);
+        li.querySelector('.fire-address').textContent = address;
+      });
+    </script>
+</body>
+</html>
