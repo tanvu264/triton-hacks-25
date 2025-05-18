@@ -74,8 +74,6 @@ async function getAllFireStations(lat, lon) {
     [out:json];
     (
       node["amenity"="fire_station"](around:10000,${lat},${lon});
-      way["amenity"="fire_station"](around:10000,${lat},${lon});
-      relation["amenity"="fire_station"](around:10000,${lat},${lon});
     );
     out center;
   `;
