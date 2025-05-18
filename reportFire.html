@@ -87,7 +87,9 @@
       if (data && data.length > 0) {
         return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error("Geocoding error:", e);
+    }
     return null;
   }
 
@@ -111,10 +113,9 @@
       fires = JSON.parse(localStorage.getItem('reportedFires')) || [];
     } catch (e) {}
 
-    // Remove ID logic and use a timestamp for Time
-    // Add the new fire report with coordinates and a unique timestamp
+    // Create the new fire report
     const newReport = {
-      Time: Date.now(), // Use current timestamp as unique identifier
+      Time: Date.now(),
       address,
       strength: Number(strength),
       lat: coords.lat,
@@ -126,21 +127,32 @@
     // Save back to localStorage
     localStorage.setItem('reportedFires', JSON.stringify(fires));
 
-    // --- Push to SheetDB (Google Sheets) ---
-    fetch('https://script.google.com/macros/s/AKfycbzvhLZAkXuljHicKjmZ_ct2AF2tg4G4iAEWBm-lC_ZgeTzuz-KI0N-PWK6iD2Rcy7m6/exec', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: newReport })
-    })
-    .then(res => res.json())
-    .then(() => {
+    // --- Push to Google Sheets via Apps Script ---
+    try {
+      const response = await fetch(
+        'https://script.google.com/macros/s/AKfycbzvhLZAkXuljHicKjmZ_ct2AF2tg4G4iAEWBm-lC_ZgeTzuz-KI0N-PWK6iD2Rcy7m6/exec', 
+        {
+          method: 'POST',
+          redirect: 'follow', // Required for Google Apps Script redirects
+          mode: 'cors',       // Explicitly request CORS mode
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ data: newReport })
+        }
+      );
+      
+      // For Google Apps Script, we usually get text back, not JSON
+      const result = await response.text();
+      console.log("Server response:", result);
+      
       alert(`Fire reported!\nAddress: ${address}\nStrength: ${strength}\nLocation: ${coords.lat}, ${coords.lon}`);
       document.getElementById('fireForm').reset();
-    })
-    .catch(() => {
+    } catch (error) {
+      console.error("Error submitting to Google Sheets:", error);
       alert("Fire reported locally, but failed to save to Google Sheets.");
       document.getElementById('fireForm').reset();
-    });
+    }
   });
   </script>
 </body>
